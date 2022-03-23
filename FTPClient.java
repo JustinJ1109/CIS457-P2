@@ -1,9 +1,6 @@
 import java.io.*; 
 import java.net.*;
 import java.util.*;
-import java.text.*;
-import java.lang.*;
-import javax.swing.*;
 
 /***********************************************
  * this a TCP Client side that can list and get files from the server directory, it can not stor
