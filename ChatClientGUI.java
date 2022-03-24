@@ -1,45 +1,53 @@
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.GroupLayout.Group;
-
 import java.awt.event.*;
 import java.util.Random;
 
 public class ChatClientGUI {
     
+    String serverHostName, port, hostName, userName, speed;
+    String keyword;
+    String goCommand;
+
+    String[][] data = {{"SPEED_1", "HOST1", "FILENAME1"}, {"SPEED_2", "HOST2", "FILENAME2"}};
+
+
     public ChatClientGUI(String title) {
         /* GUI frame holds everything*/
         JFrame frame = new JFrame(title);
 
-        /* Hold all GUI elements for connect to host section */
+
         JPanel mainPanel = new JPanel();
         JPanel connectionPanel = new JPanel();
         JPanel searchPanel = new JPanel();
-        JPanel FTPPanel = new JPanel();
+        JPanel ftpPanel = new JPanel();
 
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-
+        BoxLayout mainLayout = new BoxLayout(mainPanel, BoxLayout.Y_AXIS);
+        mainPanel.setLayout(mainLayout);
+        /* SET GROUP LAYOUTS AND ASSIGN PANELS */
         GroupLayout connectionLayout = new GroupLayout(connectionPanel);
-        GroupLayout searchLayout = new GroupLayout(searchPanel);
-        GroupLayout ftpLayout = new GroupLayout(FTPPanel);
-        
-        connectionPanel.setLayout(connectionLayout);
-        connectionPanel.setBorder(BorderFactory.createTitledBorder("Connection"));
         connectionLayout.setAutoCreateGaps(true);
         connectionLayout.setAutoCreateContainerGaps(true);
+        connectionPanel.setLayout(connectionLayout);
 
-        searchPanel.setLayout(searchLayout);
-        searchPanel.setBorder(BorderFactory.createTitledBorder("Search"));
+        GroupLayout searchLayout = new GroupLayout(searchPanel);
         searchLayout.setAutoCreateGaps(true);
         searchLayout.setAutoCreateContainerGaps(true);
+        searchPanel.setLayout(searchLayout);
 
-        FTPPanel.setLayout(ftpLayout);
-        FTPPanel.setBorder(BorderFactory.createTitledBorder("FTP"));
+        GroupLayout ftpLayout = new GroupLayout(ftpPanel);
         ftpLayout.setAutoCreateGaps(true);
         ftpLayout.setAutoCreateContainerGaps(true);
+        ftpPanel.setLayout(ftpLayout);
 
-        /* Labels */
+        // these are the titled blue borders on the layout example
+        connectionPanel.setBorder(BorderFactory.createTitledBorder("Connection"));
+        searchPanel.setBorder(BorderFactory.createTitledBorder("Search"));
+        ftpPanel.setBorder(BorderFactory.createTitledBorder("FTP"));
+
+    /****************** SWING COMPONENTS BELOW *************************/
+    /*******************************************************************/
+    /* Labels */
         // HOST SECTION
         JLabel serverHostNameLabel = new JLabel("Server Hostname");
         JLabel serverPortLabel = new JLabel("Port");
@@ -53,7 +61,7 @@ public class ChatClientGUI {
         // FTP SECTION
         JLabel commandLabel = new JLabel("Enter Command");
 
-        /* Text Fields */
+    /* Text Fields */
         // HOST SECTION
         JTextField serverHostNameField = new JTextField(16);
         JTextField portField = new JTextField(7);
@@ -66,30 +74,39 @@ public class ChatClientGUI {
         // FTP SECTION
         JTextField commandField = new JTextField(60);
 
-        JTextArea ftpTextArea = new JTextArea();        
+    /* Text Area */
+        //FTP SECTION
+        JTextArea ftpTextArea = new JTextArea();
+        ftpTextArea.setSize(new Dimension(500, 500)); 
+        ftpTextArea.setLineWrap(true);
+        ftpTextArea.setEditable(false); 
         
-        /* Drop-Down menu */
+        JScrollPane ftpScrollPane = new JScrollPane(ftpTextArea);
+        ftpScrollPane.setPreferredSize(new Dimension(500, 100));
+
+        
+    /* Drop-Down menu */
         // HOST SECTION
         String[] options = {"Ethernet", "Modem", "T1", "T3"};
         JComboBox<String> speedBox = new JComboBox<>(options);
         
-        /* Search Table */
+    /* Search Table */
         String[] colNames = {"speed", "hostname", "filename"};
         
-        String[][] data = {{"SPEED_1", "HOST1", "FILENAME1"}, {"SPEED_2", "HOST2", "FILENAME2"}};
-
+        //TODO: retrieve table from server and insert to this table
+        
         JTable searchTable = new JTable(data, colNames);
         searchTable.setPreferredScrollableViewportSize(searchTable.getPreferredSize());
+        
+        /* scroll pane holds table, without it, doesn't show headers*/
         JScrollPane tableScrollPane = new JScrollPane(searchTable);
-        JPanel tablePanel = new JPanel();
-        tablePanel.setLayout(new FlowLayout());
-        tablePanel.add(tableScrollPane);
 
-        /* Button */
+    /* Buttons */
         JButton connectButton = new JButton("Connect");
         JButton searchButton = new JButton("Search");
         JButton ftpButton = new JButton("Go");
 
+    /* Button Listeners */
         connectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent aActionEvent) {
@@ -100,11 +117,11 @@ public class ChatClientGUI {
 
                     /* Holds user's input*/
                     /****************** USER VARIABLES  ***************************/
-                    String serverHostName = serverHostNameField.getText();
-                    String port = portField.getText();
-                    String userName = userNameField.getText();
-                    String hostName = hostNameField.getText();
-                    String speed = speedBox.getSelectedItem().toString();
+                    serverHostName = serverHostNameField.getText();
+                    port = portField.getText();
+                    userName = userNameField.getText();
+                    hostName = hostNameField.getText();
+                    speed = speedBox.getSelectedItem().toString();
                     System.out.println("Hostname: " + serverHostName + "\nPort: " + port);
                     System.out.println("User Name: " + userName + "\nHost Name: " + hostName);
                     System.out.println("Speed: " + speed);
@@ -122,7 +139,7 @@ public class ChatClientGUI {
                     System.out.println("Search button pressed!");
 
                     /* Holds user's input*/
-                    String keyword = keywordField.getText();
+                    keyword = keywordField.getText();
                     System.out.println("Searching for: " + keyword);
                 }
             }
@@ -135,142 +152,141 @@ public class ChatClientGUI {
                     // TODO: add connect button pressed logic here
                     //////////////////////////////////////////////
                     System.out.println("Go button pressed!");
+                    goCommand = commandField.getText();
+                    System.out.println("Go: " + goCommand);
+                    if (goCommand.equals("")) {
+                        ftpTextArea.append("Enter a command\n");
+                    }
+                    else if (searchTable.getSelectedRow() == -1) {
+                        ftpTextArea.append("Must select a row\n");
+                    }
+                    else {
+                        /* Holds user's input*/
+                        ftpTextArea.append(">> " + goCommand + " " + data[searchTable.getSelectedRow()][2] + "\n");
+                        ftpTextArea.append("testString " + new Random().nextInt() + "\n");
 
-                    /* Holds user's input*/
-                    ftpTextArea.append("appending testString " + new Random().nextInt() + "\n");
+                        goCommand = null;
+                        commandField.setText("");
+                        searchTable.clearSelection();
+                    }
                 }
             }
         });
 
-        /* Set layout for page */
+    /**********************  All components END **************************/
+
+        // set column size for text fields
+        serverHostNameField.setColumns(22);
+        userNameField.setColumns(10);
+        hostNameField.setColumns(16);
+        // set button dimensions
+        connectButton.setPreferredSize(new Dimension(160,20));
+
+    /* BUILDING CONNECTION PANEL */
+        // top line of connection panel
+        JPanel connectionPanelTop = new JPanel();
+        connectionPanelTop.add(serverHostNameLabel);
+        connectionPanelTop.add(serverHostNameField);
+        connectionPanelTop.add(serverPortLabel);
+        connectionPanelTop.add(portField);
+        connectionPanelTop.add(connectButton);
+
+        // bottom line of connection panel
+        JPanel connectionPanelBot = new JPanel();
+        connectionPanelBot.add(serverUserNameLabel);
+        connectionPanelBot.add(userNameField);
+        connectionPanelBot.add(hostNameLabel);
+        connectionPanelBot.add(hostNameField);
+        connectionPanelBot.add(speedLabel);
+        connectionPanelBot.add(speedBox);
+        
+        // let both panels sit in horizontal parallel
         connectionLayout.setHorizontalGroup(
-            connectionLayout.createSequentialGroup()
-
-            // 1st col
-            .addGroup(connectionLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(serverHostNameLabel)
-                .addComponent(serverUserNameLabel)
-            )
-
-            // 2nd col
-            .addGroup(connectionLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(serverHostNameField, 40, 300, 300)
-                .addComponent(userNameField, 40, 300, 300)
-            )
-
-            // 3rd col
-            .addContainerGap(60, 60)
-
-            // 4th col
-            .addGroup(connectionLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(serverPortLabel)
-                .addComponent(hostNameLabel)
-            )
-
-            // 5th col
-            .addGroup(connectionLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(portField, 40, 100, 100)
-                .addComponent(hostNameField, 40, 160, 160)
-            )
-            // 6th col
-            .addContainerGap(50, 50)
-
-            // 7th col
-            .addGroup(connectionLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(connectButton, 150, 150, 150)
-                .addGroup(connectionLayout.createSequentialGroup()
-                    .addComponent(speedLabel)
-                    .addComponent(speedBox, 40, 100, 100)
-                )
-            )
+            connectionLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addComponent(connectionPanelTop)
+                .addComponent(connectionPanelBot)     
         );
-        /* set vertical layout for page */
+
+        // put top panel above bot panel
         connectionLayout.setVerticalGroup(
             connectionLayout.createSequentialGroup()
-            // 1st row
-            .addGroup(connectionLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(serverHostNameLabel)
-                .addComponent(serverHostNameField)
-                .addComponent(serverPortLabel)
-                .addComponent(portField)
-                .addComponent(connectButton)
-            )
-            // 2nd row
-            .addGroup(connectionLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(serverUserNameLabel)
-                .addComponent(userNameField)
-                .addComponent(hostNameLabel)
-                .addComponent(hostNameField)
-                .addComponent(speedLabel)
-                .addComponent(speedBox)
-            )
+                .addComponent(connectionPanelTop)
+                .addComponent(connectionPanelBot)
         );
 
-        /** SEARCH FORMAT */
+    /* BUILDING SEARCH PANEL */
+        keywordField.setColumns(22);
+        searchButton.setSize(new Dimension(80, 20));
+
+        JPanel searchPanelTop = new JPanel();
+        searchPanelTop.add(keywordLabel);
+        searchPanelTop.add(keywordField);
+        searchPanelTop.add(searchButton);
+
+        JPanel searchPanelBot = new JPanel();
+        searchPanelBot.add(tableScrollPane);
+
         searchLayout.setHorizontalGroup(
-            searchLayout.createSequentialGroup()
-            .addGroup(searchLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(searchLayout.createSequentialGroup()
-                    .addComponent(keywordLabel)
-                    .addComponent(keywordField, 100, 300, 300)
-                    .addComponent(searchButton)
-                )
-            .addComponent(tablePanel)
-            )
+            searchLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addComponent(searchPanelTop)
+                .addComponent(searchPanelBot)
         );
 
         searchLayout.setVerticalGroup(
             searchLayout.createSequentialGroup()
-            .addGroup(searchLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(keywordLabel)
-                .addComponent(keywordField)
-                .addComponent(searchButton)
-            )
-            .addContainerGap(50, 50)
-            .addComponent(tablePanel)
+                .addComponent(searchPanelTop)
+                .addComponent(searchPanelBot)
         );
 
+    /* BUILDING FTP PANEL */
+        ftpPanel.add(commandLabel);
+        ftpPanel.add(commandField);
+        ftpPanel.add(ftpButton);
+        ftpPanel.add(ftpScrollPane);
+
+        commandField.setColumns(30);
+        ftpButton.setSize(new Dimension(50, 20));
+
+        JPanel ftpPanelTop = new JPanel();
+        ftpPanelTop.add(commandLabel);
+        ftpPanelTop.add(commandField);
+        ftpPanelTop.add(ftpButton);
+
+        JPanel ftpPanelBot = new JPanel();
+        ftpPanelBot.add(ftpScrollPane);
+
         ftpLayout.setHorizontalGroup(
-            ftpLayout.createSequentialGroup()
-            .addGroup(ftpLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(ftpLayout.createSequentialGroup()
-                    .addComponent(commandLabel)
-                    .addComponent(commandField, 200, 200, 200)
-                    .addComponent(ftpButton)
-                )
-                .addComponent(ftpTextArea, 500, 500, 500)
-            )
-            
+            ftpLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addComponent(ftpPanelTop)
+                .addComponent(ftpPanelBot)
         );
 
         ftpLayout.setVerticalGroup(
             ftpLayout.createSequentialGroup()
-            .addGroup(ftpLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(commandLabel)
-                .addComponent(commandField)
-                .addComponent(ftpButton)
-            )
-            .addComponent(ftpTextArea)
+                .addComponent(ftpPanelTop)
+                .addComponent(ftpPanelBot)
         );
 
+        Dimension screenSize = new Dimension(1000,600);
         /** finalize frame settings **/
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1000, 600);
+        frame.setSize(screenSize);
         
+
+        connectionPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        searchPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        ftpPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+
         mainPanel.add(connectionPanel);
         mainPanel.add(searchPanel);
-        mainPanel.add(FTPPanel);
-
-        JScrollPane mainPanelScroll = new JScrollPane(
-            mainPanel,
-            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
-            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
-        );
-        // faster scroll speed
-        mainPanelScroll.getVerticalScrollBar().setUnitIncrement(16);
-
+        mainPanel.add(ftpPanel);
         // add connection panel to frame
-        frame.getContentPane().add(mainPanelScroll);
+        JScrollPane mainScrollPane = new JScrollPane(mainPanel);
+        mainScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        frame.getContentPane().add(mainScrollPane);
+        
 
         // center frame to screen
         frame.setLocationRelativeTo(null);
