@@ -36,7 +36,15 @@ public class FTPClientController {
             view.appendTextBoxln("Port required");
         }
         else {
-            model.setPort(temp);
+
+            try {
+                int port = Integer.parseInt(temp);
+                model.setPort(port);
+            }
+            catch (Exception e) {
+                System.out.println("Invalid port receieved");
+                view.appendTextBoxln("Invalid port received, try a valid number");
+            }
         }
 
         if ((temp = view.getUserNameField().getText()).equals("")) {
