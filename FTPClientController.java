@@ -1,8 +1,3 @@
-/* The controller class of the FTP client
-
-Responsible for changing the model based on the user
-*/
-
 public class FTPClientController {
     private FTPClient model;
     private FTPClientGUI view;
@@ -26,28 +21,49 @@ public class FTPClientController {
         System.out.println("Host Name: " + view.getHostNameField().getText());
         System.out.println("Speed: " + view.getSpeedBox().getSelectedItem());
 
-        if (view.getServerHostNameField().getText().equals("")) {
+        String temp;
+
+        // Check that user input all fields
+        // give data to FTPClient
+        if ((temp = view.getServerHostNameField().getText()).equals("")) {
             view.appendTextBoxln("Server Host Name required");
         }
-        if (view.getPortField().getText().equals("")) {
+        else {
+            model.setServerHostName(temp);
+        }
+
+        if ((temp = view.getPortField().getText()).equals("")) {
             view.appendTextBoxln("Port required");
         }
-        if (view.getUserNameField().getText().equals("")) {
+        else {
+            model.setPort(temp);
+        }
+
+        if ((temp = view.getUserNameField().getText()).equals("")) {
             view.appendTextBoxln("Username required");
         }
-        if (view.getHostNameField().getText().equals("")) {
+        else {
+            model.setUserName(temp);
+        }
+
+        if ((temp = view.getHostNameField().getText()).equals("")) {
             view.appendTextBoxln("Host name required");
+        }
+        else {
+            model.setHostName(temp);
         }
     }
 
     private void searchFor() {
         System.out.println("Running searchFor");
-        if (view.getKeywordField().getText() == null) {
+        if (view.getKeywordField().getText().equals("")) {
             view.appendTextBoxln("Showing all results...");
         }
         else {
-            view.appendTextBoxln("Showing results for keyword: " + view.getKeywordField().getText());
+            view.appendTextBoxln("Showing all that match '" + view.getKeywordField().getText() + "'");
         }
+
+        model.searchFor(view.getKeywordField().getText());
     }
 
     private void doCommand() {
