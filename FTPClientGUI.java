@@ -1,29 +1,54 @@
 import java.awt.*;
 import javax.swing.*;
-import java.awt.event.*;
-import java.util.Random;
 
-public class ChatClientGUI {
+/* The GUI/View class of the FTPClient
+
+Responsible for drawing to the screen and capturing user input for the
+controller to use
+*/
+public class FTPClientGUI {
     
-    String serverHostName, port, hostName, userName, speed;
-    String keyword;
-    String goCommand;
+    final private String[] colNames = {"Speed", "Hostname", "Filename"};
 
-    String[][] data = {{"SPEED_1", "HOST1", "FILENAME1"}, {"SPEED_2", "HOST2", "FILENAME2"}};
+    private String[][] data = { { "SPEED_1", "HOST1", "FILENAME1" }, { "SPEED_2", "HOST2", "FILENAME2" } };
 
+    private JButton connectButton;
+    private JButton searchButton;
+    private JButton ftpButton;
 
-    public ChatClientGUI(String title) {
+    private JTextArea ftpTextArea;
+    private JTable searchTable;
+
+    /* Text Fields */
+    // HOST SECTION
+    private JTextField serverHostNameField;
+    private JTextField portField;
+    private JTextField userNameField;
+    private JTextField hostNameField;
+    private JComboBox<String> speedBox;
+
+    // SEARCH SECTION
+    private JTextField keywordField;
+
+    // FTP SECTION
+    private JTextField commandField;
+
+    public FTPClientGUI(String title) {
         /* GUI frame holds everything*/
         JFrame frame = new JFrame(title);
 
-
+        // Main panels that fit in frame
+        // holds all sub-panels
         JPanel mainPanel = new JPanel();
+
+        // hold components for their section
         JPanel connectionPanel = new JPanel();
         JPanel searchPanel = new JPanel();
         JPanel ftpPanel = new JPanel();
 
         BoxLayout mainLayout = new BoxLayout(mainPanel, BoxLayout.Y_AXIS);
         mainPanel.setLayout(mainLayout);
+
         /* SET GROUP LAYOUTS AND ASSIGN PANELS */
         GroupLayout connectionLayout = new GroupLayout(connectionPanel);
         connectionLayout.setAutoCreateGaps(true);
@@ -63,115 +88,47 @@ public class ChatClientGUI {
 
     /* Text Fields */
         // HOST SECTION
-        JTextField serverHostNameField = new JTextField(16);
-        JTextField portField = new JTextField(7);
-        JTextField userNameField = new JTextField(16);
-        JTextField hostNameField = new JTextField(64);
-
+        serverHostNameField = new JTextField(16);
+        portField = new JTextField(7);
+        userNameField = new JTextField(16);
+        hostNameField = new JTextField(64);    
+    
         // SEARCH SECTION
-        JTextField keywordField = new JTextField(16);
-
+        keywordField = new JTextField(16);
+    
         // FTP SECTION
-        JTextField commandField = new JTextField(60);
+        commandField = new JTextField(60);
 
     /* Text Area */
         //FTP SECTION
-        JTextArea ftpTextArea = new JTextArea();
+        ftpTextArea = new JTextArea();
         ftpTextArea.setSize(new Dimension(500, 500)); 
         ftpTextArea.setLineWrap(true);
         ftpTextArea.setEditable(false); 
         
+        // make output panel scrollable
         JScrollPane ftpScrollPane = new JScrollPane(ftpTextArea);
         ftpScrollPane.setPreferredSize(new Dimension(500, 100));
 
-        
     /* Drop-Down menu */
         // HOST SECTION
         String[] options = {"Ethernet", "Modem", "T1", "T3"};
-        JComboBox<String> speedBox = new JComboBox<>(options);
+        speedBox = new JComboBox<>(options);
         
     /* Search Table */
-        String[] colNames = {"speed", "hostname", "filename"};
         
         //TODO: retrieve table from server and insert to this table
         
-        JTable searchTable = new JTable(data, colNames);
+        searchTable = new JTable(data, colNames);
         searchTable.setPreferredScrollableViewportSize(searchTable.getPreferredSize());
         
         /* scroll pane holds table, without it, doesn't show headers*/
         JScrollPane tableScrollPane = new JScrollPane(searchTable);
 
     /* Buttons */
-        JButton connectButton = new JButton("Connect");
-        JButton searchButton = new JButton("Search");
-        JButton ftpButton = new JButton("Go");
-
-    /* Button Listeners */
-        connectButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent aActionEvent) {
-                if (aActionEvent.getSource() == connectButton) {
-                    // TODO: add connect button pressed logic here
-                    //////////////////////////////////////////////
-                    System.out.println("Connect button pressed!");
-
-                    /* Holds user's input*/
-                    /****************** USER VARIABLES  ***************************/
-                    serverHostName = serverHostNameField.getText();
-                    port = portField.getText();
-                    userName = userNameField.getText();
-                    hostName = hostNameField.getText();
-                    speed = speedBox.getSelectedItem().toString();
-                    System.out.println("Hostname: " + serverHostName + "\nPort: " + port);
-                    System.out.println("User Name: " + userName + "\nHost Name: " + hostName);
-                    System.out.println("Speed: " + speed);
-                    /**************************************************************/
-                }
-            }
-        });
-        
-        searchButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent aActionEvent) {
-                if (aActionEvent.getSource() == searchButton) {
-                    // TODO: add connect button pressed logic here
-                    //////////////////////////////////////////////
-                    System.out.println("Search button pressed!");
-
-                    /* Holds user's input*/
-                    keyword = keywordField.getText();
-                    System.out.println("Searching for: " + keyword);
-                }
-            }
-        });
-        
-        ftpButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent aActionEvent) {
-                if (aActionEvent.getSource() == ftpButton) {
-                    // TODO: add connect button pressed logic here
-                    //////////////////////////////////////////////
-                    System.out.println("Go button pressed!");
-                    goCommand = commandField.getText();
-                    System.out.println("Go: " + goCommand);
-                    if (goCommand.equals("")) {
-                        ftpTextArea.append("Enter a command\n");
-                    }
-                    else if (searchTable.getSelectedRow() == -1) {
-                        ftpTextArea.append("Must select a row\n");
-                    }
-                    else {
-                        /* Holds user's input*/
-                        ftpTextArea.append(">> " + goCommand + " " + data[searchTable.getSelectedRow()][2] + "\n");
-                        ftpTextArea.append("testString " + new Random().nextInt() + "\n");
-
-                        goCommand = null;
-                        commandField.setText("");
-                        searchTable.clearSelection();
-                    }
-                }
-            }
-        });
+        connectButton = new JButton("Connect");
+        searchButton = new JButton("Search");
+        ftpButton = new JButton("Go");
 
     /**********************  All components END **************************/
 
@@ -295,7 +252,67 @@ public class ChatClientGUI {
         frame.setVisible(true);
     }
 
-    public static void main(String[] args) {
-        ChatClientGUI cgui = new ChatClientGUI("GV-NAPSTER Host");
+    public String[][] getData() {
+        return this.data;
+    }
+
+    public void setData(String[][] data) {
+        this.data = data;
+    }
+
+    public JButton getConnectButton() {
+        return this.connectButton;
+    }
+
+    public JButton getSearchButton() {
+        return this.searchButton;
+    }
+
+    public JButton getFtpButton() {
+        return this.ftpButton;
+    }
+
+    public void appendTextBox(String text) {
+        ftpTextArea.append(text);
+    }
+
+    public JTable getSearchTable() {
+        return searchTable;
+    }
+
+    public void appendTextBoxln(String text) {
+        ftpTextArea.append(text + "\n");
+    }
+
+    public void clearTextBox() {
+        ftpTextArea.setText("");
+    }
+
+    public JTextField getServerHostNameField() {
+        return serverHostNameField;
+    }
+
+    public JTextField getPortField() {
+        return portField;
+    }
+
+    public JTextField getUserNameField() {
+        return userNameField;
+    }
+
+    public JTextField getHostNameField() {
+        return hostNameField;
+    }
+
+    public JTextField getKeywordField() {
+        return keywordField;
+    }
+
+    public JTextField getCommandField() {
+        return commandField;
+    }
+
+    public JComboBox<String> getSpeedBox() {
+        return speedBox;
     }
 }
