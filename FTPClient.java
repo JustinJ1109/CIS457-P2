@@ -6,21 +6,18 @@ import java.util.*;
  * this a TCP Client side that can list and get files from the server directory, it can not stor
  * files to the serer directory
  *
- * @authors Cole Blunt, Noah Meyers, prakash Lingden, Brennan Luttrell, justin Jahlas
+ * @authors Cole Blunt, Noah Meyers, Prakash Lingden, Brennan Luttrell, Justin Jahlas
  * @version 3.15.2022
  */
 class FTPClient {
-
     public static void main(String argv[]) throws Exception 
     { 
     String sentence; 
     String modifiedSentence; 
     boolean isOpen = true;
-    int number=1;
     boolean notEnd = true;
 	int port1= 1371;
 	int port;
-	String statusCode;
 	boolean clientgo = true;
 	    
 	System.out.println("Welcome to the simple FTP App   \n     Commands  \nconnect servername port# connects to a specified server \nlist: lists files on server \nget: fileName.txt downloads that text file to your current directory \nstor: fileName.txt Stores the file on the server \nclose terminates the connection to the server");
