@@ -11,7 +11,14 @@ import java.util.*;
  */
 class FTPClient {
 
-	private String serverHostName, port, userName, hostName, speed;
+	private String serverHostName, userName, hostName, speed;
+	private int port;
+
+	private Socket ControlSocket;
+
+	private static boolean isConnected = false;
+
+	//TODO: remove main from this class. Create separate functions
     public static void main(String argv[]) throws Exception 
     { 
 		String sentence; 
@@ -154,7 +161,6 @@ class FTPClient {
 				socket.close();
 				dataSocket.close();
 				System.out.println("\nWhat would you like to do next: \n get: file.txt ||stor: file.txt  || close");
-
 			}
 
 		else{
@@ -169,19 +175,43 @@ class FTPClient {
 		} 
 	}
 
+	public void connectToServer() {
+		//TODO: set port1
+		int port1 = port + 1;
+
+		try {
+			ControlSocket = new Socket(serverHostName, port1);
+		}
+		catch (Exception e) {
+			System.out.println("Unable to connect to " + serverHostName);
+		}
+		System.out.println("You are connected to " + serverHostName);
+
+		isConnected = true;
+	}
+
+	public void disconnectFromServer() {
+		try {
+			ControlSocket.close();
+		}
+		catch (Exception e) {
+			System.out.println("Unable to disconnect from server:\n");
+			e.printStackTrace();
+		}
+	}
+
 	public void searchFor(String keyword) {
 		System.out.println("ServerHostName: " + serverHostName);
 		System.out.println("Port: " + port);
 		System.out.println("UserName: " + userName);
 		System.out.println("HostName: " + hostName);
-
 	}
 
 	public void setServerHostName(String name) {
 		serverHostName = name;
 	}
 
-	public void setPort(String port) {
+	public void setPort(int port) {
 		this.port = port;
 	}
 
@@ -192,5 +222,4 @@ class FTPClient {
 	public void setHostName(String hostName) {
 		this.hostName = hostName;
 	}
-
 }
