@@ -28,7 +28,6 @@ public class ftpserver extends Thread{
 	 
 	}
 	
-	
 	private void processRequest() throws Exception {
             String fromClient;
             String clientCommand;
@@ -95,42 +94,37 @@ public class ftpserver extends Thread{
                 if(clientCommand.equals("stor: "))
                 {
                     String curDir = System.getProperty("user.dir");
-                   Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-                    DataOutputStream dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
-
-
                     String fileName = tokens.nextToken();
-                    File file = new File(curDir);
-                    BufferedReader dataIn = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+                    String filePath = curDir + "/" + fileName;
+                    File server = new File(filePath);
+                    server.createNewFile();
+                    OutputStream outStream = new FileOutputStream(filePath);
+                    boolean fileExists = false;
 
-                    File folder = new File("user.dir");
-                    String[] files = folder.list();
-                    boolean found = false;
-                    //check if file is found on server
-                    for (String find: files){
-                        if (find.equals(fileName)){
-                            found = true;
-                            dataOutToClient.writeBytes("550");
-                            dataOutToClient.writeBytes("\n");
+                    Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+                    DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+
+                    try {
+                        byte[] buffer = new byte[1024];
+                        int bytes = 0;
+
+                        bytes = inData.read(buffer);
+                        do {
+                            outStream.write(buffer, 0, bytes);
                         }
+                        while((bytes = inData.read(buffer)) != -1);
+                        fileExists = true;
                     }
-
-                    if (!found) {
-                        dataOutToClient.writeBytes("200 OK");
-                        dataOutToClient.writeBytes("\n");
+                    catch(Exception E){
+                        System.out.println("Failed to receive file.");
                     }
-                    String check = dataIn.readLine();
-
-                        if (check.equals("200 OK") && !found) {
-                            OutputStream byteWriter = new FileOutputStream(file);
-                            byteWriter.write(dataIn.read());
-                            byteWriter.close();
-                        }
-
-
-                    dataOutToClient.close();
+                    if(!fileExists) {
+                        //File does not exist, do not store
+                    }
+                    else{
+                        outStream.close();
+                    }
                     dataSocket.close();
-                    System.out.println("Data Socket closed");
                 }
 
 

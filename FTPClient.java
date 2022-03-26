@@ -109,54 +109,36 @@ class FTPClient {
 			//
 			else if(sentence.startsWith("stor: "))
 			{
-				StringTokenizer tok = new StringTokenizer(sentence);
-				tok.nextToken();
-				String fileName = tok.nextToken();
-				port += 2;
+				port = port + 2;
+				System.out.println(port);
+				String curDir = System.getProperty("user.dir");
+				String filePath = curDir + "/" + sentence.substring(6);
+				FileInputStream fileInput = null;
+				boolean fileExists = true;
 
-				outToServer.writeBytes(port + " " + sentence + '\n');
-				ServerSocket socket = new ServerSocket(port);
-				Socket dataSocket = socket.accept();
+				ServerSocket welcomeData = new ServerSocket(port);
+				outToServer.writeBytes(port + " " + sentence + " " + '\n');
+				Socket dataSocket = welcomeData.accept();
+				DataOutputStream dataStream = new DataOutputStream(dataSocket.getOutputStream());
 
-				BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
-
-
-				String read = inData.readLine();
-				if (read.equals("200 OK")) {
-
-					File folder = new File(System.getProperty("user.dir"));
-					String[] files = folder.list();
-
-					boolean found = false;
-					for (String file : files) {
-						if (file.equals(fileName)) {
-							found = true;
-							System.out.println("200 OK");
-							outToServer.writeBytes("200 OK");
-							outToServer.writeBytes("\n");
-							FileInputStream fis = new FileInputStream(fileName);
-
-							byte[] buffer = new byte[1024];
-							int bytes = 0;
-
-							while(( bytes = fis.read(buffer)) != -1) {
-								outToServer.write(buffer, 0, bytes);
-							}
-
-							fis.close();
-						}
-					}
-					if (!found) {
-						System.out.println("Could not find file in client directory");
-						outToServer.writeBytes("550");
-						outToServer.writeBytes("\n");
-					}
+				try {
+					fileInput = new FileInputStream(filePath);
+				} 
+				catch (FileNotFoundException e) {
+					fileExists = false;
 				}
-				//if file exists on server
-				if (read.equals("550")){
-					System.out.println("550 File already exists on server");
+
+				if(!fileExists) {
+					System.out.println("file not found at " + filePath);
 				}
-				socket.close();
+				else {
+					System.out.println("\nUploading file from server: ");
+					sendBytes(fileInput, dataStream);
+					fileInput.close();
+				}
+
+				System.out.println("\n");
+				welcomeData.close();
 				dataSocket.close();
 				System.out.println("\nWhat would you like to do next: \n get: file.txt ||stor: file.txt  || close");
 			}
@@ -204,7 +186,16 @@ class FTPClient {
 		}
 	}
 
-	/* Get new data table from somewhere based on keyword (maybe doesnt belong here) */
+	private static void sendBytes(InputStream is, OutputStream os) throws IOException {
+		byte[] buffer = new byte[1024];
+		int bytes = 0;
+
+		while((bytes = is.read(buffer)) != -1) {
+			os.write(buffer, 0, bytes);
+		}
+	}
+
+  /* Get new data table from somewhere based on keyword (maybe doesnt belong here) */
 	public void searchFor(String keyword) {
 
 	}
