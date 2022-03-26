@@ -79,6 +79,10 @@ public class FTPClientController {
 
     /* Give view the new table received from model */
     private void searchFor() {
+        if (!model.getIsConnected()) {
+            view.appendTextBoxln("[!] Must be connected to a server [!]");
+            return;
+        }
         System.out.println("Running searchFor");
         if (view.getKeywordField().getText().equals("")) {
             view.appendTextBoxln("Showing all results...");
@@ -93,19 +97,50 @@ public class FTPClientController {
 
     /* Called when player presses Go button */
     private void doCommand() {
+        if (!model.getIsConnected()) {
+            view.appendTextBoxln("[!] Must be connected to a server [!]");
+            return;
+        }
         // get what command they want
         String command = view.getCommandField().getText();
-
+        String filename = null;
+        if (view.getSearchTable().getSelectedRow() != -1) {
+            filename = view.getSearchTable().getValueAt(view.getSearchTable().getSelectedRow(), 2).toString();
+        }
+        
         if (command.equals("store")) {
-            String filename = view.getSearchTable().getValueAt(view.getSearchTable().getSelectedRow(), 2).toString();
+            if (filename == null) {
+                view.appendTextBoxln("Must select a file");
+                return;
+            }
             // successfully stored
             if(model.doStore(filename)) {
                 view.appendTextBoxln("Storing " + filename);
             }
-            // failed
+            // failed store
             else {
                 view.appendTextBoxln("Unable to store " + filename);
             }
+
+            view.getCommandField().setText("");
+            view.getSearchTable().clearSelection();
+        }
+
+        else if (command.equals("get")) {
+            if (filename == null) {
+                view.appendTextBoxln("Must select a file");
+                return;
+            }
+
+            if (model.doGet(filename)) {
+                view.appendTextBoxln("Getting " + filename);
+            }
+            else {
+                view.appendTextBoxln("Unable to get " + filename);
+            }
+
+            view.getCommandField().setText("");
+            view.getSearchTable().clearSelection();
         }
 
         // unknown command or no command
