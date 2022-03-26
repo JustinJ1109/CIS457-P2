@@ -218,6 +218,20 @@ class FTPClient {
 		return true;
 	}
 
+	public boolean doList() {
+		System.out.println("Listing");
+
+		return true;
+	}
+
+	public boolean doGet(String filename) {
+		System.out.println("Getting " + filename);
+
+		return true;
+	} 
+
+	
+
 	/* getters and setters as needed */ 
 	public void setServerHostName(String name) {
 		serverHostName = name;
@@ -241,5 +255,9 @@ class FTPClient {
 
 	public int getPort() {
 		return port;
+	}
+
+	public boolean getIsConnected() {
+		return isConnected;
 	}
 }
