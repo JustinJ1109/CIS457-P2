@@ -17,6 +17,8 @@ public class FTPClientGUI {
     private JButton ftpButton;
 
     private JTextArea ftpTextArea;
+
+    // Data table of files
     private JTable searchTable;
 
     /* Text Fields */
@@ -74,7 +76,7 @@ public class FTPClientGUI {
     /*******************************************************************/
     /* Labels */
         // HOST SECTION
-        JLabel serverHostNameLabel = new JLabel("Server Hostname");
+        JLabel serverHostNameLabel = new JLabel("Server IP");
         JLabel serverPortLabel = new JLabel("Port");
         JLabel serverUserNameLabel = new JLabel("Username");
         JLabel hostNameLabel = new JLabel("Hostname");
