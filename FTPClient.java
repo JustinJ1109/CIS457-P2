@@ -34,7 +34,6 @@ class FTPClient {
 			sentence = inFromUser.readLine();
 			StringTokenizer tokens = new StringTokenizer(sentence);
 
-
 		if(sentence.startsWith("connect")){
 		String serverName = tokens.nextToken(); // pass the connect command
 		serverName = tokens.nextToken();
@@ -49,7 +48,6 @@ class FTPClient {
 		
 			port = port1;
 
-			
 			if(sentence.equals("list:")) {
 				
 			port = port +2;
@@ -163,7 +161,7 @@ class FTPClient {
 				System.out.println("\nWhat would you like to do next: \n get: file.txt ||stor: file.txt  || close");
 			}
 
-		else{
+		else {
 			if(sentence.equals("close"))
 			{
 			clientgo = false;
@@ -175,21 +173,27 @@ class FTPClient {
 		} 
 	}
 
-	public void connectToServer() {
-		//TODO: set port1
-		int port1 = port + 1;
+	/* Controller calls this to initiate the connection */
+	public boolean connectToServer() {
+		int port1 = port;
 
+		// TODO: need error checking to make sure hostname and port are valid?
 		try {
+			System.out.println("Attemping to connect to host: " + serverHostName + " at port " + port);
 			ControlSocket = new Socket(serverHostName, port1);
+			System.out.println("You are connected to " + serverHostName);
+			isConnected = true;
 		}
 		catch (Exception e) {
-			System.out.println("Unable to connect to " + serverHostName);
+			System.out.println("Unable to connect to host: " + serverHostName + " on port " + port);
+			e.printStackTrace();
+			return false;
 		}
-		System.out.println("You are connected to " + serverHostName);
 
-		isConnected = true;
+		return true;
 	}
 
+	/* Call me on close (maybe not needed) */
 	public void disconnectFromServer() {
 		try {
 			ControlSocket.close();
@@ -200,13 +204,21 @@ class FTPClient {
 		}
 	}
 
+	/* Get new data table from somewhere based on keyword (maybe doesnt belong here) */
 	public void searchFor(String keyword) {
-		System.out.println("ServerHostName: " + serverHostName);
-		System.out.println("Port: " + port);
-		System.out.println("UserName: " + userName);
-		System.out.println("HostName: " + hostName);
+
 	}
 
+	/* Move store function here
+		Controller calls this and provides a filename
+	 */
+	public boolean doStore(String filename) {
+		System.out.println("Storing " + filename);
+
+		return true;
+	}
+
+	/* getters and setters as needed */ 
 	public void setServerHostName(String name) {
 		serverHostName = name;
 	}
@@ -221,5 +233,13 @@ class FTPClient {
 
 	public void setHostName(String hostName) {
 		this.hostName = hostName;
+	}
+
+	public String getServerHostName() {
+		return serverHostName;
+	}
+
+	public int getPort() {
+		return port;
 	}
 }
