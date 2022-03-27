@@ -4,44 +4,71 @@ import java.util.*;
 
 public class ftpserver extends Thread{ 
     private Socket connectionSocket;
+
     int port;
     InetAddress clientName;
     int count=1;
+
+    private ArrayList<File> fileList = new ArrayList<>(0);
+    private ArrayList<UserData> userList = new ArrayList<>(0);
+
+    private DataOutputStream outToClient;
+    private DataInputStream inFromClient;
+
+    boolean welcome;
     
-    public ftpserver(Socket connectionSocket)  {
+    public ftpserver(Socket connectionSocket) throws Exception {
         this.connectionSocket = connectionSocket;
+        outToClient = new DataOutputStream(this.connectionSocket.getOutputStream());
+        inFromClient = new DataInputStream(this.connectionSocket.getInputStream());
+        welcome = true;
     }
 
+    /* First time user connects */
+    private void connectUser(String userInfo) {
+        // get username, host, and speed from user stream
+        // add user to list of users and get their files
+        StringTokenizer tokenizer = new StringTokenizer(userInfo);
 
-      public void run() 
-        {
-                if(count==1)
-                    System.out.println("User connected" + connectionSocket.getInetAddress());
-                count++;
 
-	try {
-		processRequest();
-		
-	} catch (Exception e) {
-		System.out.println(e);
-	}
-	 
+        String hostName = tokenizer.nextToken();
+        int port = Integer.parseInt(tokenizer.nextToken());
+        String userName = tokenizer.nextToken();
+        String speed = tokenizer.nextToken();
+
+        UserData user = new UserData(userInfo, hostName, speed);
+
+        userList.add(user);
+
+        
+
+    }
+
+    public void run() 
+    {
+        if(count==1)
+            System.out.println("User connected" + connectionSocket.getInetAddress());
+        count++;
+
+        try {
+            if (welcome) {
+                connectUser(this.inFromClient.readUTF());
+            }
+            else {
+                processRequest();
+            }            
+        } catch (Exception e) {
+            System.out.println(e);
+        }
 	}
 	
 	private void processRequest() throws Exception {
             String fromClient;
             String clientCommand;
-            byte[] data;
             String frstln;
                     
             while(true)
-            {
-
-                if(count==1)
-                    System.out.println("User connected" + connectionSocket.getInetAddress());
-                count++;
-        
-                DataOutputStream  outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+            {        
                 BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                 fromClient = inFromClient.readLine();
             
@@ -81,13 +108,10 @@ public class ftpserver extends Thread{
                                  dataOutToClient.writeUTF("eof");
                                  System.out.println("eof");
                              }
-
                         }
 
                            dataSocket.close();
-
                      }
-
                 }
 
                 if(clientCommand.equals("stor: "))
@@ -125,7 +149,6 @@ public class ftpserver extends Thread{
                     }
                     dataSocket.close();
                 }
-
 
                 //if get command
                 if(clientCommand.equals("get:"))
@@ -165,8 +188,8 @@ public class ftpserver extends Thread{
                     System.out.println("Data Socket closed");
                 }
 
-                if(clientCommand.equals("search")) {
-                    
+                if(clientCommand.equals("search:")) {
+
                 }
             }
         }
