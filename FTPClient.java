@@ -1,6 +1,7 @@
 import java.io.*; 
 import java.net.*;
 import java.util.*;
+import java.util.ResourceBundle.Control;
 
 /***********************************************
  * this a TCP Client side that can list and get files from the server directory, it can not stor
@@ -15,6 +16,8 @@ class FTPClient {
 	private int port;
 	private int port1 = 1370;
 	private Socket ControlSocket;
+
+	private ArrayList<String> tableData;
 
 	private static boolean isConnected = false;
 
@@ -198,8 +201,28 @@ class FTPClient {
 
   /* Get new data table from somewhere based on keyword (maybe doesnt belong here) */
 	public void searchFor(String keyword) {
+		try {
+			DataOutputStream outToServer = new DataOutputStream(ControlSocket.getOutputStream());
+			String sentence = "search:";
+			port += 2; 
+			ServerSocket welcomeData = new ServerSocket(port);
+			boolean notEnd = true;
 
-	}
+			outToServer.writeBytes(port + " " + sentence + " " + '\n');
+
+			Socket dataSocket = welcomeData.accept();
+			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+		
+		
+		
+		}
+		catch (Exception e) {
+
+		}
+	
+	
+	
+		}
 
 	/* Move store function here
 		Controller calls this and provides a filename
@@ -253,7 +276,6 @@ class FTPClient {
 			port = port +2;
 		// System.out.println(port);
 			ServerSocket welcomeData = new ServerSocket(port);
-			outToServer.writeUTF(sentence);
 			Boolean notEnd = true;
 			System.out.println("\n \n \nThe files on this server are:");
 			outToServer.writeBytes (port + " " + sentence + " " + '\n');
@@ -262,8 +284,11 @@ class FTPClient {
 			Socket dataSocket = welcomeData.accept();
 			System.out.print("here 1");
 			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+			
+			tableData = new ArrayList<>(0);
 			while(notEnd) {
 				modifiedSentence = inData.readUTF();
+				tableData.add(modifiedSentence);
 				if(modifiedSentence.equals("eof"))
 					break; 
 				System.out.println("	" + modifiedSentence);
@@ -275,6 +300,7 @@ class FTPClient {
 		catch (Exception e) {
 			System.out.println("Unable to list files in server: " + serverHostName + " on port " + port);
 			e.printStackTrace();
+			return false;
 		}
 		return true;
 	}
@@ -340,5 +366,9 @@ class FTPClient {
 
 	public boolean getIsConnected() {
 		return isConnected;
+	}
+
+	public ArrayList<String> getTableData() {
+		return tableData;
 	}
 }

@@ -143,7 +143,10 @@ public class FTPClientController {
             view.getSearchTable().clearSelection();
         }
         else if (command.equals("list")) {
-            model.doList();
+            if (model.doList()) {
+                view.appendTextBox("Received: ");
+                view.appendTextBoxln(model.getTableData().toString());
+            }
         }
         // unknown command or no command
         else {

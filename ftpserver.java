@@ -52,7 +52,6 @@ public class ftpserver extends Thread{
                 port = Integer.parseInt(frstln);
                 clientCommand = tokens.nextToken();
 
-
                   if(clientCommand.equals("list:"))
                   { 
                       String curDir = System.getProperty("user.dir");
@@ -164,6 +163,10 @@ public class ftpserver extends Thread{
                     dataOutToClient.close();
                     dataSocket.close();
                     System.out.println("Data Socket closed");
+                }
+
+                if(clientCommand.equals("search")) {
+                    
                 }
             }
         }
