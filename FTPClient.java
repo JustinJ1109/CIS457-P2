@@ -31,8 +31,8 @@ class FTPClient {
 			
 		System.out.println("Welcome to the simple FTP App   \n     Commands  \nconnect servername port# connects to a specified server \nlist: lists files on server \nget: fileName.txt downloads that text file to your current directory \nstor: fileName.txt Stores the file on the server \nclose terminates the connection to the server");
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in)); 
-			sentence = inFromUser.readLine();
-			StringTokenizer tokens = new StringTokenizer(sentence);
+		sentence = inFromUser.readLine();
+		StringTokenizer tokens = new StringTokenizer(sentence);
 
 		if(sentence.startsWith("connect")){
 		String serverName = tokens.nextToken(); // pass the connect command
@@ -155,6 +155,7 @@ class FTPClient {
 		} 
 	}
 
+
 	/* Controller calls this to initiate the connection */
 	public boolean connectToServer() {
 		int port1 = port;
@@ -205,19 +206,103 @@ class FTPClient {
 	 */
 	public boolean doStore(String filename) {
 		System.out.println("Storing " + filename);
+		try {
+			// int port1 = port + 2;
+			String curDir = System.getProperty("user.dir");
+			String filePath = curDir + "/" + filename;
+			FileInputStream fileInput = null;
+			boolean fileExists = true;
 
+			ServerSocket welcomeData = new ServerSocket(port);
+			// outToServer.writeBytes(port + " " + sentence + " " + '\n');
+			Socket dataSocket = welcomeData.accept();
+			DataOutputStream dataStream = new DataOutputStream(dataSocket.getOutputStream());
+			try {
+				fileInput = new FileInputStream(filePath);
+			} 
+			catch (FileNotFoundException e) {
+				fileExists = false;
+			}
+
+			if(!fileExists) {
+				System.out.println("file not found at " + filePath);
+			}
+			else {
+				System.out.println("\nUploading file from server: ");
+				sendBytes(fileInput, dataStream);
+				fileInput.close();
+			}
+
+			System.out.println("\n");
+			welcomeData.close();
+			dataSocket.close();
+		}
+		catch(Exception e) {
+			System.out.println("Unable to store: " + filename + " on server: " + serverHostName);
+			e.printStackTrace();
+		}
 		return true;
 	}
 
 	public boolean doList() {
 		System.out.println("Listing");
+		String modifiedSentence;
+		try{
+			int port1 = port +2;
+		// System.out.println(port);
+			ServerSocket welcomeData = new ServerSocket(port1);
 
+			Boolean notEnd = true;
+			System.out.println("\n \n \nThe files on this server are:");
+
+			Socket dataSocket =welcomeData.accept(); 
+			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+			while(notEnd) {
+				modifiedSentence = inData.readUTF();
+				if(modifiedSentence.equals("eof"))
+					break; 
+				System.out.println("	" + modifiedSentence);
+			}
+			System.out.println("\nWhat would you like to do next: \n get: file.txt ||stor: file.txt  || close");
+			welcomeData.close();
+			dataSocket.close();
+		}
+		catch (Exception e) {
+			System.out.println("Unable to list files in server: " + serverHostName + " on port " + port);
+			e.printStackTrace();
+		}
 		return true;
 	}
 
 	public boolean doGet(String filename) {
 		System.out.println("Getting " + filename);
+		try{
+				ServerSocket welcomeData = new ServerSocket(port);
+				Socket dataSocket = welcomeData.accept();
+				BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
 
+				String read = inData.readLine();
+				if (read.equals("550")){
+					System.out.println("550 Cannot find file");
+				}
+				if (read.equals("200 OK")){
+					System.out.println("200 OK");
+					File file = new File(filename);
+					OutputStream out = new FileOutputStream(file);
+					out.write(inData.read());
+					System.out.println("downloaded: " + file);
+					out.close();
+					inData.close();
+					welcomeData.close();
+					dataSocket.close();
+				}
+			}
+			catch (Exception e) {
+				System.out.println("Unable to get file: " + filename + " on port " + port);
+				e.printStackTrace();
+			}
+
+		System.out.println("\nWhat would you like to do next: \n get: file.txt ||stor: file.txt  || close");
 		return true;
 	} 
 
