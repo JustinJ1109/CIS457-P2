@@ -142,7 +142,9 @@ public class FTPClientController {
             view.getCommandField().setText("");
             view.getSearchTable().clearSelection();
         }
-
+        else if (command.equals("list")) {
+            model.doList();
+        }
         // unknown command or no command
         else {
             view.getCommandField().setText("");
