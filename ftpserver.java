@@ -33,7 +33,6 @@ public class ftpserver extends Thread{
         // add user to list of users and get their files
         StringTokenizer tokenizer = new StringTokenizer(userInfo);
 
-
         String hostName = tokenizer.nextToken();
         int port = Integer.parseInt(tokenizer.nextToken());
         String userName = tokenizer.nextToken();
@@ -41,14 +40,16 @@ public class ftpserver extends Thread{
 
         UserData user = new UserData(userInfo, hostName, speed);
 
-       addUser(user);
+        dataSocket = new Socket(this.connectionSocket.getInetAddress(), port);
+
+        System.out.println("data receieved: " + hostName + " " + port + " " + userName + " " + speed);
+        addUser(user);
 
         inFromClient = new DataInputStream(new BufferedInputStream(this.dataSocket.getInputStream()));
 
         File file = getFile();
         ArrayList<FileData> files = parseData(file, user);
         addContent(files);
-        welcome = false;
         inFromClient.close();
         dataSocket.close();
 
@@ -69,7 +70,7 @@ public class ftpserver extends Thread{
     }
 
     private ArrayList<FileData> parseData(File file, UserData user) throws Exception{
-        ArrayList<FileData> fileList = new ArrayList();
+        ArrayList<FileData> fileList = new ArrayList<>();
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(file);
@@ -106,12 +107,12 @@ public class ftpserver extends Thread{
 
     public void run() 
     {
-        if(count==1)
-            System.out.println("User connected" + connectionSocket.getInetAddress());
-        count++;
 
         try {
             if (welcome) {
+                welcome = false;
+                System.out.println("Connecting User " + connectionSocket.getInetAddress());
+
                 connectUser(this.inFromClient.readUTF());
             }
             else {

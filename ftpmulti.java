@@ -1,5 +1,4 @@
 import java.net.*;
-import java.util.ArrayList;
 import java.io.*;
 
 public class ftpmulti {
@@ -15,6 +14,7 @@ public class ftpmulti {
 
         } catch (IOException e) {
             System.err.println("Could not listen on port: 1370.");
+            e.printStackTrace();
             System.exit(-1);
         }
 
@@ -25,9 +25,11 @@ public class ftpmulti {
                 Thread t = new Thread(w);
                 t.start();
             }
-            catch (Exception e){
-            e.printStackTrace();
+            catch (Exception e) {
+                System.out.println("Could not start thread");
+                e.printStackTrace();
             }
+            
         }
     }
 }

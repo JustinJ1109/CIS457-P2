@@ -3,6 +3,8 @@ import java.net.*;
 import java.util.*;
 import java.util.ResourceBundle.Control;
 
+import javax.sound.midi.ControllerEventListener;
+
 /***********************************************
  * this a TCP Client side that can list and get files from the server directory, it can not stor
  * files to the serer directory
@@ -169,6 +171,9 @@ class FTPClient {
 			ControlSocket = new Socket(serverHostName, port1);
 			System.out.println("You are connected to " + serverHostName);
 			isConnected = true;
+
+			DataOutputStream dataToServer = new DataOutputStream(ControlSocket.getOutputStream());
+			dataToServer.writeUTF(hostName + " " + port + " " + userName + " " + speed);
 		}
 		catch (Exception e) {
 			System.out.println("Unable to connect to host: " + serverHostName + " on port " + port1);
@@ -212,17 +217,11 @@ class FTPClient {
 
 			Socket dataSocket = welcomeData.accept();
 			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
-		
-		
-		
 		}
 		catch (Exception e) {
 
 		}
-	
-	
-	
-		}
+	}
 
 	/* Move store function here
 		Controller calls this and provides a filename
