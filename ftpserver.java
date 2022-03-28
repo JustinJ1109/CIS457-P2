@@ -16,7 +16,7 @@ public class ftpserver extends Thread{
     protected static Vector<FileData> fileList = new Vector<FileData>();
     protected static Vector<UserData> userList = new Vector <UserData>();
 
-    private DataOutputStream outToClient;
+    private static DataOutputStream outToClient;
     private DataInputStream inFromClient;
 
     private DataInputStream dataInFromClient;
@@ -120,6 +120,26 @@ public class ftpserver extends Thread{
         return fileList;
     }
 
+    private static void searchCommand(String keyword) throws Exception {
+        synchronized (fileList){
+            synchronized (userList){
+                String output = "";
+                for (int i = 0; i < ftpserver.fileList.size(); i++) {
+                    FileData fileEntry = (FileData) ftpserver.fileList.get(i);
+                    String description = fileEntry.getDescription();
+                    if (description.contains(keyword)) {
+                        UserData user = fileEntry.getUser();
+                        output += user.getSpeed() + " " + user.getHostName() + " " + fileEntry.getFileName() + " \t";
+                    }
+                }
+                System.out.println("Sending back: " + output);
+                outToClient.writeBytes(output + " \n");
+
+            }
+        }
+
+    }
+
     private void addUser(UserData newUser) {
         synchronized (userList) {
             userList.addElement(newUser);
@@ -144,6 +164,7 @@ public class ftpserver extends Thread{
             System.out.println("in process request");
             BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
             fromClient = inFromClient.readLine();
+            System.out.println("server" + fromClient);
         
             System.out.println("fromClient: " + fromClient);
             StringTokenizer tokens = new StringTokenizer(fromClient);
@@ -261,6 +282,9 @@ public class ftpserver extends Thread{
             }
 
             if(clientCommand.equals("search:")) {
+                System.out.print("at server");
+                String keyword = tokens.nextToken();
+                ftpserver.searchCommand(keyword);
 
             }
             
