@@ -1,9 +1,6 @@
 import java.io.*; 
 import java.net.*;
 import java.util.*;
-import java.util.ResourceBundle.Control;
-
-import javax.sound.midi.ControllerEventListener;
 
 /***********************************************
  * this a TCP Client side that can list and get files from the server directory, it can not stor
@@ -172,8 +169,22 @@ class FTPClient {
 			System.out.println("You are connected to " + serverHostName);
 			isConnected = true;
 
-			DataOutputStream dataToServer = new DataOutputStream(ControlSocket.getOutputStream());
-			dataToServer.writeUTF(hostName + " " + port + " " + userName + " " + speed);
+			DataOutputStream toServer = new DataOutputStream(ControlSocket.getOutputStream());
+			toServer.writeUTF(hostName + " " + port + " " + userName + " " + speed);
+			System.out.println("Sending " + hostName + " " + port + " " + userName + " " + speed + " to server");
+		
+			System.out.println("Sending bytes to server");
+			FileInputStream file = new FileInputStream("filelist.xml");
+			byte[] buffer = new byte[1024];
+			int bytes = 0;
+			while ((bytes = file.read(buffer)) != -1) {
+				System.out.println(bytes + " bytes sent");
+				toServer.write(buffer, 0, bytes);
+			}
+			file.close();
+			toServer.close();
+			System.out.println("File sent");
+		
 		}
 		catch (Exception e) {
 			System.out.println("Unable to connect to host: " + serverHostName + " on port " + port1);
@@ -369,5 +380,9 @@ class FTPClient {
 
 	public ArrayList<String> getTableData() {
 		return tableData;
+	}
+
+	public void setSpeed(String speed) {
+		this.speed = speed;
 	}
 }

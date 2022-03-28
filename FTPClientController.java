@@ -69,6 +69,8 @@ public class FTPClientController {
             model.setHostName(temp);
         }
 
+        model.setSpeed(view.getSpeedBox().getSelectedItem().toString());
+
         // all info looks good, try to connect
         if (!invalidInput) {
             if (model.connectToServer()) {

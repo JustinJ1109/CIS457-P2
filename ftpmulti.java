@@ -20,8 +20,10 @@ public class ftpmulti {
 
         while (listening)
         {
+            
             try {
                 w = new ftpserver(serverSocket.accept());
+                System.out.println("\nnew thread");
                 Thread t = new Thread(w);
                 t.start();
             }
