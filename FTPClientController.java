@@ -5,6 +5,7 @@ public class FTPClientController {
     public FTPClientController(FTPClient m, FTPClientGUI v) {
         model = m;
         view = v;
+        System.out.println("controller created");
     }
 
     /* Add button listeners to GUI */
@@ -12,6 +13,7 @@ public class FTPClientController {
         view.getConnectButton().addActionListener(e -> connectToServer());
         view.getSearchButton().addActionListener(e -> searchFor());
         view.getFtpButton().addActionListener(e -> doCommand());
+        System.out.println("controller initilized");
     }
 
     /* Connect to the server when user presses button */
@@ -24,7 +26,6 @@ public class FTPClientController {
         System.out.println("Speed: " + view.getSpeedBox().getSelectedItem());
 
         String temp;
-
         boolean invalidInput = false;
 
         /* fetch all data from fields provided from user and assign to model's variables */
@@ -36,6 +37,7 @@ public class FTPClientController {
         else {
             model.setServerHostName(temp);
         }
+
         // port
         if ((temp = view.getPortField().getText()).equals("")) {
             view.appendTextBoxln("Port required");
@@ -52,6 +54,7 @@ public class FTPClientController {
                 invalidInput = true;
             }
         }
+
         // userName
         if ((temp = view.getUserNameField().getText()).equals("")) {
             view.appendTextBoxln("Username required");
@@ -60,6 +63,7 @@ public class FTPClientController {
         else {
             model.setUserName(temp);
         }
+        
         // hostName
         if ((temp = view.getHostNameField().getText()).equals("")) {
             view.appendTextBoxln("Host name required");
@@ -69,9 +73,11 @@ public class FTPClientController {
             model.setHostName(temp);
         }
 
+        model.setSpeed(view.getSpeedBox().getSelectedItem().toString());
+
         // all info looks good, try to connect
         if (!invalidInput) {
-            if (model.connectToServer()) {
+            if (model.doConnection()) {
                 view.appendTextBoxln("Connected to " + model.getServerHostName() + " on port " + model.getPort());
             }
         }
@@ -97,6 +103,7 @@ public class FTPClientController {
 
     /* Called when player presses Go button */
     private void doCommand() {
+        System.out.println("Doing command");
         if (!model.getIsConnected()) {
             view.appendTextBoxln("[!] Must be connected to a server [!]");
             return;
@@ -142,7 +149,12 @@ public class FTPClientController {
             view.getCommandField().setText("");
             view.getSearchTable().clearSelection();
         }
-
+        else if (command.equals("list")) {
+            if (model.doList()) {
+                view.appendTextBox("Received: ");
+                view.appendTextBoxln(model.getTableData().toString());
+            }
+        }
         // unknown command or no command
         else {
             view.getCommandField().setText("");

@@ -1,15 +1,37 @@
 import java.io.*; 
 import java.net.*;
 import java.util.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 
 public class ftpserver extends Thread{ 
+    
     private Socket connectionSocket;
+    private Socket dataSocket;
+
     int port;
     InetAddress clientName;
     int count=1;
+
+    protected static Vector<FileData> fileList = new Vector<FileData>();
+    protected static Vector<UserData> userList = new Vector <UserData>();
+
+    private DataOutputStream outToClient;
+    private DataInputStream inFromClient;
+
+    private DataInputStream dataInFromClient;
+
+    boolean welcome;
+    private boolean running;
     
-    public ftpserver(Socket connectionSocket)  {
+    public ftpserver(Socket connectionSocket) throws Exception {
         this.connectionSocket = connectionSocket;
+        outToClient = new DataOutputStream(this.connectionSocket.getOutputStream());
+        inFromClient = new DataInputStream(this.connectionSocket.getInputStream());
+
+        welcome = true;
+        running = true;
+        System.out.println("TID: " + this.getId() +" Connection created " + connectionSocket.getInetAddress() + " on port " + connectionSocket.getLocalPort() + " to port " + connectionSocket.getPort());
     }
 
     public void run() 
@@ -22,7 +44,7 @@ public class ftpserver extends Thread{
             else {
                 System.out.println("TID: " + this.getId() +" processing request");
                 waitForRequest();
-            }
+            }       
               
         } catch (Exception e) {
             System.out.println(e);
@@ -38,19 +60,18 @@ public class ftpserver extends Thread{
         StringTokenizer tokenizer = new StringTokenizer(userInfo);
 
         String hostName = tokenizer.nextToken();
-        System.out.println("hostname receieved: " + hostName);
         int port = Integer.parseInt(tokenizer.nextToken());
-        System.out.println("port receieved: " + port);
         String userName = tokenizer.nextToken();
-        System.out.println("username receieved: " + userName);
         String speed = tokenizer.nextToken();
-        System.out.println("speed receieved: " + speed);
 
         UserData user = new UserData(userInfo, hostName, speed);
 
+
         System.out.println("TID: " + this.getId() +" data receieved: " + hostName + " " + port + " " + userName + " " + speed);
         addUser(user);
-        
+
+        inFromClient = new DataInputStream(new BufferedInputStream(this.connectionSocket.getInputStream()));
+
         File file = getFile();
         ArrayList<FileData> files = parseData(file, user);
         addContent(files);
@@ -59,11 +80,10 @@ public class ftpserver extends Thread{
         inFromClient.close();
         dataSocket.close();
     }
-
     private File getFile() throws Exception{
         System.out.println("TID: " + this.getId() +" getting file");
 
-        FileOutputStream fos = new FileOutputStream("temp.xml");
+        FileOutputStream fos = new FileOutputStream("filelist.xml");
         byte[] fileData = new byte[1024];
         int bytes = 0;
         System.out.println("TID: " + this.getId() +" reading bytes");
@@ -71,11 +91,10 @@ public class ftpserver extends Thread{
         while ((bytes = inFromClient.read(fileData)) != -1) {
             System.out.println("Bytes received: " + bytes);
             fos.write(fileData, 0, bytes);
-            System.out.println(fileData);
         }
         System.out.println("done reading");
         fos.close();
-        File file = new File("temp.xml");
+        File file = new File("filelist.xml");
         return file;
     }
 
@@ -119,144 +138,132 @@ public class ftpserver extends Thread{
 
     }
 	
-	private void processRequest() throws Exception {
+	private void processRequest(String clientCommand) throws Exception {
             String fromClient;
-            String clientCommand;
-            byte[] data;
             String frstln;
-                    
-            while(true)
-            {
-
-                if(count==1)
-                    System.out.println("User connected" + connectionSocket.getInetAddress());
-                count++;
+            System.out.println("in process request");
+            BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            fromClient = inFromClient.readLine();
         
-                DataOutputStream  outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-                BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-                fromClient = inFromClient.readLine();
-            
-      		    System.out.println("fromClient: " + fromClient);
-                StringTokenizer tokens = new StringTokenizer(fromClient);
-            
-                frstln = tokens.nextToken();
-                port = Integer.parseInt(frstln);
-                clientCommand = tokens.nextToken();
+            System.out.println("fromClient: " + fromClient);
+            StringTokenizer tokens = new StringTokenizer(fromClient);
+        
+            frstln = tokens.nextToken();
+            port = Integer.parseInt(frstln);
+            clientCommand = tokens.nextToken();
 
-
-                  if(clientCommand.equals("list:"))
-                  { 
-                      String curDir = System.getProperty("user.dir");
-       
-                      Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-                      DataOutputStream  dataOutToClient = 
-                      new DataOutputStream(dataSocket.getOutputStream());
-                      File dir = new File(curDir);
-    
-                      String[] children = dir.list();
-                      if (children == null) 
-                      {
-
-                          System.out.print("List Does Not Exist");
-                      } else {
-                          for (int i=0; i<children.length; i++)
-                          {
-
-                              String filename = children[i];
-                              System.out.print(filename);
-
-                              if(filename.endsWith(".txt"))
-                                dataOutToClient.writeUTF(children[i]);
-                             System.out.println(filename);
-                             if(i-1==children.length-2)
-                             {
-                                 dataOutToClient.writeUTF("eof");
-                                 System.out.println("eof");
-                             }
-
-                        }
-
-                           dataSocket.close();
-
-                     }
-
-                }
-
-                if(clientCommand.equals("stor: "))
-                {
+                if(clientCommand.equals("list:"))
+                { 
                     String curDir = System.getProperty("user.dir");
-                    String fileName = tokens.nextToken();
-                    String filePath = curDir + "/" + fileName;
-                    File server = new File(filePath);
-                    server.createNewFile();
-                    OutputStream outStream = new FileOutputStream(filePath);
-                    boolean fileExists = false;
-
+    
                     Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-                    DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+                    DataOutputStream  dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+                    File dir = new File(curDir);
 
-                    try {
+                    String[] children = dir.list();
+                    if (children == null) 
+                    {
+
+                        System.out.print("List Does Not Exist");
+                    } else {
+                        for (int i=0; i<children.length; i++)
+                        {
+
+                            String filename = children[i];
+                            System.out.print(filename);
+
+                            if(filename.endsWith(".txt"))
+                            dataOutToClient.writeUTF(children[i]);
+                            System.out.println(filename);
+                            if(i-1==children.length-2)
+                            {
+                                dataOutToClient.writeUTF("eof");
+                                System.out.println("eof");
+                            }
+                    }
+
+                        dataSocket.close();
+                    }
+            }
+
+            if(clientCommand.equals("stor: "))
+            {
+                String curDir = System.getProperty("user.dir");
+                String fileName = tokens.nextToken();
+                String filePath = curDir + "/" + fileName;
+                File server = new File(filePath);
+                server.createNewFile();
+                OutputStream outStream = new FileOutputStream(filePath);
+                boolean fileExists = false;
+
+                Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+                DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+
+                try {
+                    byte[] buffer = new byte[1024];
+                    int bytes = 0;
+
+                    bytes = inData.read(buffer);
+                    do {
+                        outStream.write(buffer, 0, bytes);
+                    }
+                    while((bytes = inData.read(buffer)) != -1);
+                    fileExists = true;
+                }
+                catch(Exception E){
+                    System.out.println("Failed to receive file.");
+                }
+                if(!fileExists) {
+                    //File does not exist, do not store
+                }
+                else{
+                    outStream.close();
+                }
+                dataSocket.close();
+            }
+
+            //if get command
+            if(clientCommand.equals("get:"))
+            {
+                String curDir = System.getProperty("user.dir");
+                Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+                DataOutputStream dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+
+                String fileName = tokens.nextToken();
+                File folder = new File(curDir);
+                String[] files = folder.list();
+
+                boolean found = false;
+                for (String file: files){
+                    if (file.equals(fileName)){
+                        found = true;
+                        dataOutToClient.writeBytes("200 OK");
+                        dataOutToClient.writeBytes("\n");
+                        FileInputStream fis = new FileInputStream(fileName);
                         byte[] buffer = new byte[1024];
                         int bytes = 0;
 
-                        bytes = inData.read(buffer);
-                        do {
-                            outStream.write(buffer, 0, bytes);
+                        while ((bytes = fis.read(buffer)) != -1){
+                            dataOutToClient.write(buffer, 0, bytes);
                         }
-                        while((bytes = inData.read(buffer)) != -1);
-                        fileExists = true;
+                        System.out.println("file was sent");
+                        fis.close();
                     }
-                    catch(Exception E){
-                        System.out.println("Failed to receive file.");
-                    }
-                    if(!fileExists) {
-                        //File does not exist, do not store
-                    }
-                    else{
-                        outStream.close();
-                    }
-                    dataSocket.close();
                 }
-
-
-                //if get command
-                if(clientCommand.equals("get:"))
-                {
-                    String curDir = System.getProperty("user.dir");
-                    Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-                    DataOutputStream dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
-
-                    String fileName = tokens.nextToken();
-                    File folder = new File(curDir);
-                    String[] files = folder.list();
-
-                    boolean found = false;
-                    for (String file: files){
-                        if (file.equals(fileName)){
-                            found = true;
-                            dataOutToClient.writeBytes("200 OK");
-                            dataOutToClient.writeBytes("\n");
-                            FileInputStream fis = new FileInputStream(fileName);
-                            byte[] buffer = new byte[1024];
-                            int bytes = 0;
-
-                            while ((bytes = fis.read(buffer)) != -1){
-                                dataOutToClient.write(buffer, 0, bytes);
-                            }
-                            System.out.println("file was sent");
-                            fis.close();
-                        }
-                    }
-                    //if file is not found send 550
-                    if (!found){
-                        dataOutToClient.writeBytes("550");
-                        dataOutToClient.writeBytes("\n");
-                    }
-                    dataOutToClient.close();
-                    dataSocket.close();
-                    System.out.println("Data Socket closed");
+                //if file is not found send 550
+                if (!found){
+                    dataOutToClient.writeBytes("550");
+                    dataOutToClient.writeBytes("\n");
                 }
+                dataOutToClient.close();
+                dataSocket.close();
+                System.out.println("Data Socket closed");
             }
+
+            if(clientCommand.equals("search:")) {
+
+            }
+            
         }
     }
 
