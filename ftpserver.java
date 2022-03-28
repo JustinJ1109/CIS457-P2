@@ -1,16 +1,19 @@
 import java.io.*; 
 import java.net.*;
 import java.util.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 
 public class ftpserver extends Thread{ 
     private Socket connectionSocket;
+    private Socket dataSocket;
 
     int port;
     InetAddress clientName;
     int count=1;
 
-    private ArrayList<File> fileList = new ArrayList<>(0);
-    private ArrayList<UserData> userList = new ArrayList<>(0);
+    protected static Vector<FileData> fileList = new Vector<FileData>();
+    protected static Vector<UserData> userList = new Vector <UserData>();
 
     private DataOutputStream outToClient;
     private DataInputStream inFromClient;
@@ -25,7 +28,7 @@ public class ftpserver extends Thread{
     }
 
     /* First time user connects */
-    private void connectUser(String userInfo) {
+    private void connectUser(String userInfo) throws Exception {
         // get username, host, and speed from user stream
         // add user to list of users and get their files
         StringTokenizer tokenizer = new StringTokenizer(userInfo);
@@ -38,11 +41,68 @@ public class ftpserver extends Thread{
 
         UserData user = new UserData(userInfo, hostName, speed);
 
-        userList.add(user);
+       addUser(user);
 
-        
+        inFromClient = new DataInputStream(new BufferedInputStream(this.dataSocket.getInputStream()));
+
+        File file = getFile();
+        ArrayList<FileData> files = parseData(file, user);
+        addContent(files);
+        welcome = false;
+        inFromClient.close();
+        dataSocket.close();
+
+
 
     }
+    private File getFile() throws Exception{
+        FileOutputStream fos = new FileOutputStream("temp.xml");
+        byte[] fileData = new byte[1024];
+        int bytes = 0;
+        while ((bytes = inFromClient.read(fileData)) != -1) {
+            System.out.println("Bytes received: " + bytes);
+            fos.write(fileData, 0, bytes);
+        }
+        fos.close();
+        File file = new File("temp.xml");
+        return file;
+    }
+
+    private ArrayList<FileData> parseData(File file, UserData user) throws Exception{
+        ArrayList<FileData> fileList = new ArrayList();
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(file);
+        doc.getDocumentElement().normalize();
+        NodeList nList = doc.getElementsByTagName("file");
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node node = nList.item(i);
+            System.out.println("\nCurrent Element :" + node.getNodeName());
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                Element eTemp = (Element) node;
+                System.out.println(eTemp.getElementsByTagName("name").item(0).getTextContent());
+                System.out.println(eTemp.getElementsByTagName("description").item(0).getTextContent());
+                fileList.add(new FileData(user, eTemp.getElementsByTagName("name").item(0).getTextContent(), eTemp.getElementsByTagName("description").item(0).getTextContent()));
+            }
+        }
+        file.delete();
+        return fileList;
+
+    }
+
+    private void addUser(UserData newUser) {
+        synchronized (userList) {
+            userList.addElement(newUser);
+        }
+    }
+
+    private void addContent(ArrayList<FileData> newData) {
+        synchronized (fileList) {
+            fileList.addAll(newData);
+        }
+    }
+
+
 
     public void run() 
     {

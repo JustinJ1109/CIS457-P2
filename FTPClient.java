@@ -21,7 +21,7 @@ class FTPClient {
 
 	private static boolean isConnected = false;
 
-	//TODO: remove main from this class. Create separate functions
+	// TODO: remove main from this class. Create separate functions
 //    public static void main(String argv[]) throws Exception
 //    {
 //		String sentence;

@@ -20,9 +20,14 @@ public class ftpmulti {
 
         while (listening)
         {
-            w = new ftpserver(serverSocket.accept());
-            Thread t = new Thread(w);
-            t.start();
+            try {
+                w = new ftpserver(serverSocket.accept());
+                Thread t = new Thread(w);
+                t.start();
+            }
+            catch (Exception e){
+            e.printStackTrace();
+            }
         }
     }
 }
