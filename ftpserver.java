@@ -6,7 +6,6 @@ import org.w3c.dom.*;
 
 public class ftpserver extends Thread{ 
     
-    
     private Socket connectionSocket;
     private Socket dataSocket;
 
@@ -32,8 +31,25 @@ public class ftpserver extends Thread{
 
         welcome = true;
         running = true;
-        System.out.println("TID: " + this.getId() +"Connection created " + connectionSocket.getInetAddress());
+        System.out.println("TID: " + this.getId() +" Connection created " + connectionSocket.getInetAddress() + " on port " + connectionSocket.getLocalPort() + " to port " + connectionSocket.getPort());
     }
+
+    public void run() 
+    {
+        try {
+            if (welcome) {
+                System.out.println("TID: " + this.getId() +" welcoming user");
+                connectUser(inFromClient.readUTF());
+            }
+            else {
+                System.out.println("TID: " + this.getId() +" processing request");
+                waitForRequest();
+            }       
+              
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+	}
 
     /* First time user connects */
     private void connectUser(String userInfo) throws Exception {
@@ -50,23 +66,22 @@ public class ftpserver extends Thread{
 
         UserData user = new UserData(userInfo, hostName, speed);
 
-        dataSocket = new Socket(this.connectionSocket.getInetAddress(), port);
 
-        System.out.println("TID: " + this.getId() +"data receieved: " + hostName + " " + port + " " + userName + " " + speed);
+        System.out.println("TID: " + this.getId() +" data receieved: " + hostName + " " + port + " " + userName + " " + speed);
         addUser(user);
 
-        inFromClient = new DataInputStream(new BufferedInputStream(this.dataSocket.getInputStream()));
+        inFromClient = new DataInputStream(new BufferedInputStream(this.connectionSocket.getInputStream()));
 
         File file = getFile();
         ArrayList<FileData> files = parseData(file, user);
         addContent(files);
 
-        System.out.println("Closing inFromClient stream and socket on port " + dataSocket.getPort());
-        dataInFromClient.close();
+        System.out.println("Closing inFromClient stream and socket on port " + connectionSocket.getPort());
+        inFromClient.close();
         dataSocket.close();
     }
     private File getFile() throws Exception{
-        System.out.println("TID: " + this.getId() +"getting file");
+        System.out.println("TID: " + this.getId() +" getting file");
 
         FileOutputStream fos = new FileOutputStream("filelist.xml");
         byte[] fileData = new byte[1024];
@@ -116,24 +131,6 @@ public class ftpserver extends Thread{
             fileList.addAll(newData);
         }
     }
-
-    public void run() 
-    {
-        try {
-            while(running) {
-                if (welcome) {
-                    System.out.println("TID: " + this.getId() +"welcoming user");
-                    connectUser(this.inFromClient.readUTF());
-                }
-                else {
-                    System.out.println("TID: " + this.getId() +"processing request");
-                    waitForRequest();
-                }       
-            }     
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-	}
 
     private void waitForRequest() throws Exception {
         String fromClient = this.inFromClient.readUTF();
