@@ -12,21 +12,112 @@ public class ftpserver extends Thread{
         this.connectionSocket = connectionSocket;
     }
 
-
-      public void run() 
-        {
-                if(count==1)
-                    System.out.println("User connected" + connectionSocket.getInetAddress());
-                count++;
-
-	try {
-		processRequest();
-		
-	} catch (Exception e) {
-		System.out.println(e);
+    public void run() 
+    {
+        try {
+            if (welcome) {
+                System.out.println("TID: " + this.getId() +" welcoming user");
+                connectUser(inFromClient.readUTF());
+            }
+            else {
+                System.out.println("TID: " + this.getId() +" processing request");
+                waitForRequest();
+            }
+              
+        } catch (Exception e) {
+            System.out.println(e);
+        }
 	}
-	 
-	}
+
+    /* First time user connects */
+    private void connectUser(String userInfo) throws Exception {
+        welcome = false;
+        System.out.println("TID: " + this.getId() + " in connectUser");
+        // get username, host, and speed from user stream
+        // add user to list of users and get their files
+        StringTokenizer tokenizer = new StringTokenizer(userInfo);
+
+        String hostName = tokenizer.nextToken();
+        System.out.println("hostname receieved: " + hostName);
+        int port = Integer.parseInt(tokenizer.nextToken());
+        System.out.println("port receieved: " + port);
+        String userName = tokenizer.nextToken();
+        System.out.println("username receieved: " + userName);
+        String speed = tokenizer.nextToken();
+        System.out.println("speed receieved: " + speed);
+
+        UserData user = new UserData(userInfo, hostName, speed);
+
+        System.out.println("TID: " + this.getId() +" data receieved: " + hostName + " " + port + " " + userName + " " + speed);
+        addUser(user);
+        
+        File file = getFile();
+        ArrayList<FileData> files = parseData(file, user);
+        addContent(files);
+
+        System.out.println("Closing inFromClient stream and socket on port " + connectionSocket.getPort());
+        inFromClient.close();
+        dataSocket.close();
+    }
+
+    private File getFile() throws Exception{
+        System.out.println("TID: " + this.getId() +" getting file");
+
+        FileOutputStream fos = new FileOutputStream("temp.xml");
+        byte[] fileData = new byte[1024];
+        int bytes = 0;
+        System.out.println("TID: " + this.getId() +" reading bytes");
+
+        while ((bytes = inFromClient.read(fileData)) != -1) {
+            System.out.println("Bytes received: " + bytes);
+            fos.write(fileData, 0, bytes);
+            System.out.println(fileData);
+        }
+        System.out.println("done reading");
+        fos.close();
+        File file = new File("temp.xml");
+        return file;
+    }
+
+    private ArrayList<FileData> parseData(File file, UserData user) throws Exception{
+        System.out.println("Parsing data");
+        ArrayList<FileData> fileList = new ArrayList<>();
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(file);
+        doc.getDocumentElement().normalize();
+        NodeList nList = doc.getElementsByTagName("file");
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node node = nList.item(i);
+            System.out.println("\nCurrent Element :" + node.getNodeName());
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                Element eTemp = (Element) node;
+                System.out.println(eTemp.getElementsByTagName("name").item(0).getTextContent());
+                System.out.println(eTemp.getElementsByTagName("description").item(0).getTextContent());
+                fileList.add(new FileData(user, eTemp.getElementsByTagName("name").item(0).getTextContent(), eTemp.getElementsByTagName("description").item(0).getTextContent()));
+            }
+        }
+        file.delete();
+        return fileList;
+    }
+
+    private void addUser(UserData newUser) {
+        synchronized (userList) {
+            userList.addElement(newUser);
+        }
+    }
+
+    private void addContent(ArrayList<FileData> newData) {
+        synchronized (fileList) {
+            fileList.addAll(newData);
+        }
+    }
+
+    private void waitForRequest() throws Exception {
+        String fromClient = this.inFromClient.readUTF();
+        processRequest(fromClient);
+
+    }
 	
 	private void processRequest() throws Exception {
             String fromClient;
