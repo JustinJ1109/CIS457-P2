@@ -16,7 +16,7 @@ public class ftpserver extends Thread{
     protected static Vector<FileData> fileList = new Vector<FileData>();
     protected static Vector<UserData> userList = new Vector <UserData>();
 
-    private DataOutputStream outToClient;
+    private static DataOutputStream outToClient;
     private DataInputStream inFromClient;
 
     private DataInputStream dataInFromClient;
@@ -118,6 +118,26 @@ public class ftpserver extends Thread{
         return fileList;
     }
 
+    private static void searchCommand(String keyword) throws Exception {
+        synchronized (fileList){
+            synchronized (userList){
+                String output = "";
+                for (int i = 0; i < ftpserver.fileList.size(); i++) {
+                    FileData fileEntry = (FileData) ftpserver.fileList.get(i);
+                    String description = fileEntry.getDescription();
+                    if (description.contains(keyword)) {
+                        UserData user = fileEntry.getUser();
+                        output += user.getSpeed() + " " + user.getHostName() + " " + fileEntry.getFileName() + " \t";
+                    }
+                }
+                System.out.println("Sending back: " + output);
+                outToClient.writeBytes(output + " \n");
+
+            }
+        }
+
+    }
+
     private void addUser(UserData newUser) {
         synchronized (userList) {
             userList.addElement(newUser);
@@ -140,6 +160,12 @@ public class ftpserver extends Thread{
 	private void processRequest(String clientCommand) throws Exception {
             String frstln;
             System.out.println("in process request");
+<<<<<<< HEAD
+=======
+            BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            fromClient = inFromClient.readLine();
+            System.out.println("server" + fromClient);
+>>>>>>> b42a9d6395d45d9244abedf4bd91b4566118e4cd
         
             System.out.println("fromClient: " + clientCommand);
             StringTokenizer tokens = new StringTokenizer(clientCommand);
@@ -258,6 +284,9 @@ public class ftpserver extends Thread{
             }
 
             if(clientCommand.equals("search:")) {
+                System.out.print("at server");
+                String keyword = tokens.nextToken();
+                ftpserver.searchCommand(keyword);
 
                 Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
                 dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());

@@ -84,12 +84,19 @@ class FTPClient {
 		try {
 			System.out.println("Control Socket port : " + ControlSocket.getPort());
 			String sentence = "search:";
+			System.out.println("at client side");
 			port += 2; 
 			System.out.println("Data port " + port);
 			ServerSocket welcomeData = new ServerSocket(port);
 			boolean notEnd = true;
 
+<<<<<<< HEAD
 			toServer.writeUTF(port + " " + sentence);
+=======
+			outToServer.writeBytes(port + " " + sentence + " " + keyword +'\n');
+			System.out.println(keyword);
+
+>>>>>>> b42a9d6395d45d9244abedf4bd91b4566118e4cd
 
 			Socket dataSocket = welcomeData.accept();
 			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));

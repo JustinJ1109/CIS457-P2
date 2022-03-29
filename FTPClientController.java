@@ -101,6 +101,7 @@ public class FTPClientController {
             return;
         }
         System.out.println("Running searchFor");
+        model.searchFor(view.getKeywordField().getText());
         if (view.getKeywordField().getText().equals("")) {
             view.appendTextBoxln("Showing all results...");
         }
@@ -108,8 +109,6 @@ public class FTPClientController {
         else {
             view.appendTextBoxln("Showing all that match '" + view.getKeywordField().getText() + "'");
         }
-
-        model.searchFor(view.getKeywordField().getText());
     }
 
     /* Called when player presses Go button */
@@ -125,7 +124,7 @@ public class FTPClientController {
         if (view.getSearchTable().getSelectedRow() != -1) {
             filename = view.getSearchTable().getValueAt(view.getSearchTable().getSelectedRow(), 2).toString();
         }
-        
+
         if (command.equals("store")) {
             if (filename == null) {
                 view.appendTextBoxln("Must select a file");
