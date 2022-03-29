@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<filelist>
+<?xml version="1.0" encoding="utf-8" standalone="no"?><filelist>
 	<file>
 		<name>MP3.txt</name>
 		<description>FAQ on the compression algorithm. </description>
@@ -10,6 +9,6 @@
 	</file>
 	<file>
 		<name>test.txt</name>
-		<description>This is the best ultimate test file.</description>
+		<description>This is the ultimate test file.</description>
 	</file>
-</filelist>
+<file><name>Rose</name><description>Delhi</description></file></filelist>

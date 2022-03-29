@@ -38,60 +38,60 @@ public class FTPClientController {
         /* fetch all data from fields provided from user and assign to model's variables */
         // serverHostName
         //FIXME: uncomment
-        // if ((temp = view.getServerHostNameField().getText()).equals("")) {
-        //     view.appendTextBoxln("Server Host Name required");
-        //     invalidInput = true;
-        // }
-        // else {
-        //     model.setServerHostName(temp);
-        // }
+        if ((temp = view.getServerHostNameField().getText()).equals("")) {
+            view.appendTextBoxln("Server Host Name required");
+            invalidInput = true;
+        }
+        else {
+            model.setServerHostName(temp);
+        }
 
-        // // port
-        // if ((temp = view.getPortField().getText()).equals("")) {
-        //     view.appendTextBoxln("Port required");
-        //     invalidInput = true;
-        // }
-        // else {
-        //     try {
-        //         int port = Integer.parseInt(temp);
-        //         model.setPort(port);
-        //     }
-        //     catch (Exception e) {
-        //         System.out.println("Invalid port receieved");
-        //         view.appendTextBoxln("Invalid port received, try a valid number");
-        //         invalidInput = true;
-        //     }
-        // }
+        // port
+        if ((temp = view.getPortField().getText()).equals("")) {
+            view.appendTextBoxln("Port required");
+            invalidInput = true;
+        }
+        else {
+            try {
+                int port = Integer.parseInt(temp);
+                model.setPort(port);
+            }
+            catch (Exception e) {
+                System.out.println("Invalid port receieved");
+                view.appendTextBoxln("Invalid port received, try a valid number");
+                invalidInput = true;
+            }
+        }
 
-        // // userName
-        // if ((temp = view.getUserNameField().getText()).equals("")) {
-        //     view.appendTextBoxln("Username required");
-        //     invalidInput = true;
-        // }
-        // else {
-        //     model.setUserName(temp);
-        // }
+        // userName
+        if ((temp = view.getUserNameField().getText()).equals("")) {
+            view.appendTextBoxln("Username required");
+            invalidInput = true;
+        }
+        else {
+            model.setUserName(temp);
+        }
         
-        // // hostName
-        // if ((temp = view.getHostNameField().getText()).equals("")) {
-        //     view.appendTextBoxln("Host name required");
-        //     invalidInput = true;
-        // }
-        // else {
-        //     model.setHostName(temp);
-        // }
+        // hostName
+        if ((temp = view.getHostNameField().getText()).equals("")) {
+            view.appendTextBoxln("Host name required");
+            invalidInput = true;
+        }
+        else {
+            model.setHostName(temp);
+        }
 
         model.setSpeed(view.getSpeedBox().getSelectedItem().toString());
 
         // FIXME: remove, this is only for justin
-        model.setServerHostName("192.168.1.64");
-        view.getServerHostNameField().setText("192.168.1.64");
-        model.setUserName("j");
-        view.getUserNameField().setText("j");
-        model.setPort(1370);
-        view.getPortField().setText("1370");
-        model.setHostName("pc");
-        view.getHostNameField().setText("pc");
+        // model.setServerHostName("192.168.1.64");
+        // view.getServerHostNameField().setText("192.168.1.64");
+        // model.setUserName("j");
+        // view.getUserNameField().setText("j");
+        // model.setPort(1370);
+        // view.getPortField().setText("1370");
+        // model.setHostName("pc");
+        // view.getHostNameField().setText("pc");
 
 
         // all info looks good, try to connect
@@ -141,9 +141,16 @@ public class FTPClientController {
             data[i] = s.split(" ");
             i++;
         }
-        view.setData(data);
+        // view.setData(data);
+
+        System.out.println("data length " + data.length);
+        for (i = 0; i < data.length; i++) {
+            view.getSearchTable().setValueAt(data[i][0], 0, 0);
+            view.getSearchTable().setValueAt(data[i][1], 0, 1);
+            view.getSearchTable().setValueAt(data[i][2], 0, 2);
+        };
         
-        view.resetSearchTable(data);
+        // view.resetSearchTable(data);
         //FIXME: does not update GUI for some reason
         // look up how to update JTable data
         // Or maybe how to update JTable within a JScrollPane
@@ -185,8 +192,17 @@ public class FTPClientController {
         }
 
         else if (command.equals("get")) {
-            String[] fileToGet = view.getData()[view.getSearchTable().getSelectedRow()];
-            if (fileToGet == null) {
+            String[] fileToGet = null;
+
+            try{
+                fileToGet = view.getData()[view.getSearchTable().getSelectedRow()];
+            }
+            catch (Exception e) {
+                view.appendTextBoxln("Must select a row");
+                System.out.println("User did not select a row");
+                return;
+            }
+            if (fileToGet == null || fileToGet[0].equals(" ") || fileToGet[0].equals("")) {
                 view.appendTextBoxln("Must select a file");
                 return;
             }

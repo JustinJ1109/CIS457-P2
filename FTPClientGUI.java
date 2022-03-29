@@ -1,5 +1,8 @@
 import java.awt.*;
+import java.sql.PreparedStatement;
+
 import javax.swing.*;
+import javax.swing.table.TableModel;
 
 /* The GUI/View class of the FTPClient
 
@@ -125,9 +128,9 @@ public class FTPClientGUI {
         
         searchTable = new JTable(data, colNames);
         searchTable.setPreferredScrollableViewportSize(searchTable.getPreferredSize());
-        
         /* scroll pane holds table, without it, doesn't show headers*/
         tableScrollPane = new JScrollPane(searchTable);
+
 
     /* Buttons */
         connectButton = new JButton("Connect");
@@ -329,6 +332,10 @@ public class FTPClientGUI {
     }
 
     public void resetSearchTable(String[][] data) {
+    }
+
+    public void updateTable(String[][] data) {
+        searchTable.setValueAt(data[0][1], 0, 1);
     }
 
 }

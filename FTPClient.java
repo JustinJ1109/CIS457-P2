@@ -40,7 +40,6 @@ class FTPClient {
 			toServer.writeUTF(hostName + " " + port + " " + userName + " " + speed);
 			System.out.println("Sending " + hostName + " " + port + " " + userName + " " + speed + " to server");
 		
-			System.out.println("Sending bytes to server");
 			FileInputStream file = new FileInputStream("filelist.xml");
 			byte[] buffer = new byte[1024];
 			int bytes = 0;
@@ -64,11 +63,8 @@ class FTPClient {
 	/* Call me on close (maybe not needed) */
 	public void disconnectFromServer() {
 		try {
-			System.out.println("Control Socket port : " + ControlSocket.getPort());
 			String sentence = "close:";
-			System.out.println("at client side");
 			port += 2; 
-			System.out.println("Data port " + port);
 			ServerSocket welcomeData = new ServerSocket(port);
 
 			toServer.writeUTF(port + " " + sentence + " " + hostName);
@@ -107,11 +103,8 @@ class FTPClient {
   /* Get new data table from somewhere based on keyword (maybe doesnt belong here) */
 	public void searchFor(String keyword) {
 		try {
-			System.out.println("Control Socket port : " + ControlSocket.getPort());
 			String sentence = "search:";
-			System.out.println("at client side");
 			port += 2; 
-			System.out.println("Data port " + port);
 			ServerSocket welcomeData = new ServerSocket(port);
 
 			toServer.writeUTF(port + " " + sentence + " " + keyword);
@@ -185,7 +178,6 @@ class FTPClient {
 	}
 
 	public boolean doList() {
-		System.out.println("Listing");
 		String modifiedSentence;
 		try{
 			DataOutputStream outToServer = new DataOutputStream(ControlSocket.getOutputStream());
@@ -225,28 +217,28 @@ class FTPClient {
 	public boolean doGet(String[] fileToGet) {
 		System.out.println("Getting " + fileToGet[2]);
 		try {
-			System.out.println("Control Socket port : " + ControlSocket.getPort());
 			String sentence = "get:";
-			System.out.println("at client side");
 			port += 2; 
-			System.out.println("Data port " + port);
 			ServerSocket welcomeData = new ServerSocket(port);
 
-			toServer.writeUTF(port + " " + sentence + " " + fileToGet[0] + " " + fileToGet[1] + fileToGet[2]);
+			toServer.writeUTF(port + " " + sentence + " " + fileToGet[0] + " " + fileToGet[1] +" " + fileToGet[2]);
 
 			Socket dataSocket = welcomeData.accept();
 			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
 			
+
+			String[] data = inData.readUTF().split(" ");
+
 			//TODO: read in file from server and download (or put in xml?)
-			File xmlFile = new File("C:\\filelist.xml");
+			File xmlFile = new File("filelist.xml");
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
 			Document document = documentBuilder.parse(xmlFile);
 			Element documentElement = document.getDocumentElement();
 			Element textNode = document.createElement("name");
-			textNode.setTextContent("Rose");
+			textNode.setTextContent(data[0]);
 			Element textNode1 = document.createElement("description");
-			textNode1.setTextContent("Delhi");
+			textNode1.setTextContent(data[1]);
 			Element nodeElement = document.createElement("file");
 			nodeElement.appendChild(textNode);
 			nodeElement.appendChild(textNode1);
@@ -266,6 +258,7 @@ class FTPClient {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 
 		return true;

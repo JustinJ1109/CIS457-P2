@@ -23,7 +23,7 @@ public class ftpmulti {
             
             try {
                 w = new ftpserver(serverSocket.accept());
-                System.out.println("\nnew thread");
+                System.out.println("Opening new Client Handler Thread\n");
                 Thread t = new Thread(w);
                 t.start();
             }
