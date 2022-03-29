@@ -137,6 +137,25 @@ public class ftpserver extends Thread{
         processRequest(fromClient);
 
     }
+
+    private static void searchCommand(String keyword) throws Exception {
+        synchronized (fileList) {
+            synchronized (userList) {
+                String output = "";
+                for (int i = 0; i < ftpserver.fileList.size(); i++) {
+                    FileData fileEntry = (FileData) ftpserver.fileList.get(i);
+                    String description = fileEntry.getDescription();
+                    if (description.contains(keyword)) {
+                        UserData user = fileEntry.getUser();
+                        output += user.getSpeed() + " " + user.getHostName() + " " + fileEntry.getFileName() + " \t";
+                    }
+                }
+                System.out.println("Sending back: " + output);
+               //outToClient.writeBytes(output + " \n");
+
+            }
+        }
+    }
 	
 	private void processRequest(String clientCommand) throws Exception {
             String fromClient;
@@ -261,7 +280,10 @@ public class ftpserver extends Thread{
             }
 
             if(clientCommand.equals("search:")) {
-
+                System.out.println("at server");
+                String keyword = tokens.nextToken();
+                System.out.println("server: " + keyword);
+                ftpserver.searchCommand(keyword);
             }
             
         }
