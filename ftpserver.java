@@ -44,7 +44,7 @@ public class ftpserver extends Thread{
             else {
                 System.out.println("TID: " + this.getId() +" processing request");
                 waitForRequest();
-            }       
+            }
               
         } catch (Exception e) {
             System.out.println(e);
@@ -60,18 +60,19 @@ public class ftpserver extends Thread{
         StringTokenizer tokenizer = new StringTokenizer(userInfo);
 
         String hostName = tokenizer.nextToken();
+        System.out.println("hostname receieved: " + hostName);
         int port = Integer.parseInt(tokenizer.nextToken());
+        System.out.println("port receieved: " + port);
         String userName = tokenizer.nextToken();
+        System.out.println("username receieved: " + userName);
         String speed = tokenizer.nextToken();
+        System.out.println("speed receieved: " + speed);
 
         UserData user = new UserData(userInfo, hostName, speed);
 
-
         System.out.println("TID: " + this.getId() +" data receieved: " + hostName + " " + port + " " + userName + " " + speed);
         addUser(user);
-
-        inFromClient = new DataInputStream(new BufferedInputStream(this.connectionSocket.getInputStream()));
-
+        
         File file = getFile();
         ArrayList<FileData> files = parseData(file, user);
         addContent(files);
@@ -80,10 +81,11 @@ public class ftpserver extends Thread{
         inFromClient.close();
         dataSocket.close();
     }
+
     private File getFile() throws Exception{
         System.out.println("TID: " + this.getId() +" getting file");
 
-        FileOutputStream fos = new FileOutputStream("filelist.xml");
+        FileOutputStream fos = new FileOutputStream("temp.xml");
         byte[] fileData = new byte[1024];
         int bytes = 0;
         System.out.println("TID: " + this.getId() +" reading bytes");
@@ -91,10 +93,11 @@ public class ftpserver extends Thread{
         while ((bytes = inFromClient.read(fileData)) != -1) {
             System.out.println("Bytes received: " + bytes);
             fos.write(fileData, 0, bytes);
+            System.out.println(fileData);
         }
         System.out.println("done reading");
         fos.close();
-        File file = new File("filelist.xml");
+        File file = new File("temp.xml");
         return file;
     }
 

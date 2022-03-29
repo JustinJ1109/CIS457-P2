@@ -30,22 +30,24 @@ class FTPClient {
 			ControlSocket = new Socket(serverHostName, controlPort);
 			System.out.println("You are connected to " + serverHostName);
 			isConnected = true;
-
+			
 			DataOutputStream toServer = new DataOutputStream(ControlSocket.getOutputStream());
 			toServer.writeUTF(hostName + " " + port + " " + userName + " " + speed);
 			System.out.println("Sending " + hostName + " " + port + " " + userName + " " + speed + " to server");
 		
-			// System.out.println("Sending bytes to server");
-			// FileInputStream file = new FileInputStream("filelist.xml");
-			// byte[] buffer = new byte[1024];
-			// int bytes = 0;
-			// while ((bytes = file.read(buffer)) != -1) {
-			// 	System.out.println(bytes + " bytes sent");
-			// 	toServer.write(buffer, 0, bytes);
-			// }
-			// file.close();
-			// toServer.close();
-			// System.out.println("File sent");
+			System.out.println("Sending bytes to server");
+			FileInputStream file = new FileInputStream("filelist.xml");
+			byte[] buffer = new byte[4098];
+			int bytes = 0;
+			while ((bytes = file.read(buffer)) != -1) {
+				System.out.println(bytes + " bytes sent");
+				toServer.write(buffer, 0, bytes);
+			}
+
+
+			file.close();
+			toServer.close();
+			System.out.println("File sent");
 		
 		}
 		catch (Exception e) {
