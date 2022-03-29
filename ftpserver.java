@@ -160,12 +160,6 @@ public class ftpserver extends Thread{
 	private void processRequest(String clientCommand) throws Exception {
             String frstln;
             System.out.println("in process request");
-<<<<<<< HEAD
-=======
-            BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-            fromClient = inFromClient.readLine();
-            System.out.println("server" + fromClient);
->>>>>>> b42a9d6395d45d9244abedf4bd91b4566118e4cd
         
             System.out.println("fromClient: " + clientCommand);
             StringTokenizer tokens = new StringTokenizer(clientCommand);
@@ -286,37 +280,17 @@ public class ftpserver extends Thread{
             if(clientCommand.equals("search:")) {
                 System.out.print("at server");
                 String keyword = tokens.nextToken();
-                ftpserver.searchCommand(keyword);
+                System.out.println("keyword: " + keyword);
 
                 Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
                 dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
-
+                
                 
                 System.out.println("Searching");
             }
             
         }
     }
-
-    // private static void searchCommand(String keyword) throws Exception {
-    //     synchronized (fileList){
-    //         synchronized (userList){
-    //             String output = "";
-    //             for (int i = 0; i < ftpserver.fileList.size(); i++) {
-    //                 FileData fileEntry = (FileData) ftpserver.fileList.get(i);
-    //                 String description = fileEntry.getDescription();
-    //                 if (description.contains(keyword)) {
-    //                     UserData user = fileEntry.getUser();
-    //                     output += user.getSpeed() + " " + user.getHostName() + " " + fileEntry.getFileName() + " \t";
-    //                 }
-    //             }
-    //             System.out.println("Sending back: " + output);
-    //             outToClient.writeBytes(output + " \n");
-
-    //         }
-    //     }
-
-    // }
 
 	
 

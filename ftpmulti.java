@@ -10,7 +10,7 @@ public class ftpmulti {
 	    ftpserver w;
 
         try {
-            serverSocket = new ServerSocket(1333);
+            serverSocket = new ServerSocket(1370);
 
         } catch (IOException e) {
             System.err.println("Could not listen on port: 1370.");

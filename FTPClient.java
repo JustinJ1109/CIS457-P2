@@ -90,13 +90,7 @@ class FTPClient {
 			ServerSocket welcomeData = new ServerSocket(port);
 			boolean notEnd = true;
 
-<<<<<<< HEAD
-			toServer.writeUTF(port + " " + sentence);
-=======
-			outToServer.writeBytes(port + " " + sentence + " " + keyword +'\n');
-			System.out.println(keyword);
-
->>>>>>> b42a9d6395d45d9244abedf4bd91b4566118e4cd
+			toServer.writeUTF(port + " " + sentence + " " + keyword);
 
 			Socket dataSocket = welcomeData.accept();
 			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
