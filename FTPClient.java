@@ -20,6 +20,8 @@ class FTPClient {
 
 	private static boolean isConnected = false;
 
+	private DataOutputStream toServer;
+
 	/* Controller calls this to initiate the connection */
 	public boolean doConnection() {
 		port = controlPort;
@@ -31,21 +33,21 @@ class FTPClient {
 			System.out.println("You are connected to " + serverHostName);
 			isConnected = true;
 
-			DataOutputStream toServer = new DataOutputStream(ControlSocket.getOutputStream());
+			toServer = new DataOutputStream(ControlSocket.getOutputStream());
 			toServer.writeUTF(hostName + " " + port + " " + userName + " " + speed);
 			System.out.println("Sending " + hostName + " " + port + " " + userName + " " + speed + " to server");
 		
-			// System.out.println("Sending bytes to server");
-			// FileInputStream file = new FileInputStream("filelist.xml");
-			// byte[] buffer = new byte[1024];
-			// int bytes = 0;
-			// while ((bytes = file.read(buffer)) != -1) {
-			// 	System.out.println(bytes + " bytes sent");
-			// 	toServer.write(buffer, 0, bytes);
-			// }
-			// file.close();
-			// toServer.close();
-			// System.out.println("File sent");
+			System.out.println("Sending bytes to server");
+			FileInputStream file = new FileInputStream("filelist.xml");
+			byte[] buffer = new byte[1024];
+			int bytes = 0;
+			while ((bytes = file.read(buffer)) != -1) {
+				System.out.println(bytes + " bytes sent");
+				toServer.write(buffer, 0, bytes);
+			}
+			file.close();
+			toServer.flush();
+			System.out.println("File sent");
 		
 		}
 		catch (Exception e) {
@@ -80,19 +82,21 @@ class FTPClient {
   /* Get new data table from somewhere based on keyword (maybe doesnt belong here) */
 	public void searchFor(String keyword) {
 		try {
-			DataOutputStream outToServer = new DataOutputStream(ControlSocket.getOutputStream());
+			System.out.println("Control Socket port : " + ControlSocket.getPort());
 			String sentence = "search:";
 			port += 2; 
+			System.out.println("Data port " + port);
 			ServerSocket welcomeData = new ServerSocket(port);
 			boolean notEnd = true;
 
-			outToServer.writeBytes(port + " " + sentence + " " + '\n');
+			toServer.writeUTF(port + " " + sentence);
 
 			Socket dataSocket = welcomeData.accept();
 			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+			System.out.println("received " + inData.readUTF());
 		}
 		catch (Exception e) {
-
+			e.printStackTrace();
 		}
 	}
 
@@ -145,12 +149,12 @@ class FTPClient {
 		try{
 			DataOutputStream outToServer = new DataOutputStream(ControlSocket.getOutputStream());
 			String sentence = "list:";
-			port = port +2;
+			port = port + 2;
 		// System.out.println(port);
 			ServerSocket welcomeData = new ServerSocket(port);
 			Boolean notEnd = true;
 			System.out.println("\n \n \nThe files on this server are:");
-			outToServer.writeBytes (port + " " + sentence + " " + '\n');
+			outToServer.writeBytes (sentence + " " + port);
 			System.out.print(welcomeData);
 
 			Socket dataSocket = welcomeData.accept();

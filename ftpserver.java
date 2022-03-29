@@ -20,6 +20,7 @@ public class ftpserver extends Thread{
     private DataInputStream inFromClient;
 
     private DataInputStream dataInFromClient;
+    private DataOutputStream dataOutToClient;
 
     boolean welcome;
     private boolean running;
@@ -37,17 +38,18 @@ public class ftpserver extends Thread{
     public void run() 
     {
         try {
-            if (welcome) {
-                System.out.println("TID: " + this.getId() +" welcoming user");
-                connectUser(inFromClient.readUTF());
+            while(running) {
+                if (welcome) {
+                    System.out.println("TID: " + this.getId() +" welcoming user");
+                    connectUser(inFromClient.readUTF());
+                }
+                else {
+                    System.out.println("TID: " + this.getId() +" processing request");
+                    waitForRequest();
+                }       
             }
-            else {
-                System.out.println("TID: " + this.getId() +" processing request");
-                waitForRequest();
-            }       
-              
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 	}
 
@@ -66,7 +68,6 @@ public class ftpserver extends Thread{
 
         UserData user = new UserData(userInfo, hostName, speed);
 
-
         System.out.println("TID: " + this.getId() +" data receieved: " + hostName + " " + port + " " + userName + " " + speed);
         addUser(user);
 
@@ -76,25 +77,22 @@ public class ftpserver extends Thread{
         ArrayList<FileData> files = parseData(file, user);
         addContent(files);
 
-        System.out.println("Closing inFromClient stream and socket on port " + connectionSocket.getPort());
-        inFromClient.close();
-        dataSocket.close();
+        System.out.println("Done connecting");
     }
     private File getFile() throws Exception{
         System.out.println("TID: " + this.getId() +" getting file");
 
-        FileOutputStream fos = new FileOutputStream("filelist.xml");
+        FileOutputStream fos = new FileOutputStream("temp.xml");
         byte[] fileData = new byte[1024];
         int bytes = 0;
         System.out.println("TID: " + this.getId() +" reading bytes");
 
-        while ((bytes = inFromClient.read(fileData)) != -1) {
-            System.out.println("Bytes received: " + bytes);
-            fos.write(fileData, 0, bytes);
-        }
+        System.out.println("Bytes received: " + bytes);
+        fos.write(fileData, 0, inFromClient.read(fileData));
+        
         System.out.println("done reading");
         fos.close();
-        File file = new File("filelist.xml");
+        File file = new File("temp.xml");
         return file;
     }
 
@@ -133,23 +131,22 @@ public class ftpserver extends Thread{
     }
 
     private void waitForRequest() throws Exception {
-        String fromClient = this.inFromClient.readUTF();
+        System.out.println("Waiting for req");
+        String fromClient = inFromClient.readUTF();
+        System.out.println("req received");
         processRequest(fromClient);
-
     }
 	
 	private void processRequest(String clientCommand) throws Exception {
-            String fromClient;
             String frstln;
             System.out.println("in process request");
-            BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-            fromClient = inFromClient.readLine();
         
-            System.out.println("fromClient: " + fromClient);
-            StringTokenizer tokens = new StringTokenizer(fromClient);
+            System.out.println("fromClient: " + clientCommand);
+            StringTokenizer tokens = new StringTokenizer(clientCommand);
         
             frstln = tokens.nextToken();
             port = Integer.parseInt(frstln);
+            System.out.println("Port # : " + port);
             clientCommand = tokens.nextToken();
 
                 if(clientCommand.equals("list:"))
@@ -186,7 +183,7 @@ public class ftpserver extends Thread{
                     }
             }
 
-            if(clientCommand.equals("stor: "))
+            if(clientCommand.equals("stor:"))
             {
                 String curDir = System.getProperty("user.dir");
                 String fileName = tokens.nextToken();
@@ -262,10 +259,35 @@ public class ftpserver extends Thread{
 
             if(clientCommand.equals("search:")) {
 
+                Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+                dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+
+                
+                System.out.println("Searching");
             }
             
         }
     }
+
+    // private static void searchCommand(String keyword) throws Exception {
+    //     synchronized (fileList){
+    //         synchronized (userList){
+    //             String output = "";
+    //             for (int i = 0; i < ftpserver.fileList.size(); i++) {
+    //                 FileData fileEntry = (FileData) ftpserver.fileList.get(i);
+    //                 String description = fileEntry.getDescription();
+    //                 if (description.contains(keyword)) {
+    //                     UserData user = fileEntry.getUser();
+    //                     output += user.getSpeed() + " " + user.getHostName() + " " + fileEntry.getFileName() + " \t";
+    //                 }
+    //             }
+    //             System.out.println("Sending back: " + output);
+    //             outToClient.writeBytes(output + " \n");
+
+    //         }
+    //     }
+
+    // }
 
 	
 

@@ -30,50 +30,61 @@ public class FTPClientController {
 
         /* fetch all data from fields provided from user and assign to model's variables */
         // serverHostName
-        if ((temp = view.getServerHostNameField().getText()).equals("")) {
-            view.appendTextBoxln("Server Host Name required");
-            invalidInput = true;
-        }
-        else {
-            model.setServerHostName(temp);
-        }
+        //FIXME: uncomment
+        // if ((temp = view.getServerHostNameField().getText()).equals("")) {
+        //     view.appendTextBoxln("Server Host Name required");
+        //     invalidInput = true;
+        // }
+        // else {
+        //     model.setServerHostName(temp);
+        // }
 
-        // port
-        if ((temp = view.getPortField().getText()).equals("")) {
-            view.appendTextBoxln("Port required");
-            invalidInput = true;
-        }
-        else {
-            try {
-                int port = Integer.parseInt(temp);
-                model.setPort(port);
-            }
-            catch (Exception e) {
-                System.out.println("Invalid port receieved");
-                view.appendTextBoxln("Invalid port received, try a valid number");
-                invalidInput = true;
-            }
-        }
+        // // port
+        // if ((temp = view.getPortField().getText()).equals("")) {
+        //     view.appendTextBoxln("Port required");
+        //     invalidInput = true;
+        // }
+        // else {
+        //     try {
+        //         int port = Integer.parseInt(temp);
+        //         model.setPort(port);
+        //     }
+        //     catch (Exception e) {
+        //         System.out.println("Invalid port receieved");
+        //         view.appendTextBoxln("Invalid port received, try a valid number");
+        //         invalidInput = true;
+        //     }
+        // }
 
-        // userName
-        if ((temp = view.getUserNameField().getText()).equals("")) {
-            view.appendTextBoxln("Username required");
-            invalidInput = true;
-        }
-        else {
-            model.setUserName(temp);
-        }
+        // // userName
+        // if ((temp = view.getUserNameField().getText()).equals("")) {
+        //     view.appendTextBoxln("Username required");
+        //     invalidInput = true;
+        // }
+        // else {
+        //     model.setUserName(temp);
+        // }
         
-        // hostName
-        if ((temp = view.getHostNameField().getText()).equals("")) {
-            view.appendTextBoxln("Host name required");
-            invalidInput = true;
-        }
-        else {
-            model.setHostName(temp);
-        }
+        // // hostName
+        // if ((temp = view.getHostNameField().getText()).equals("")) {
+        //     view.appendTextBoxln("Host name required");
+        //     invalidInput = true;
+        // }
+        // else {
+        //     model.setHostName(temp);
+        // }
 
         model.setSpeed(view.getSpeedBox().getSelectedItem().toString());
+
+        model.setServerHostName("192.168.1.64");
+        view.getServerHostNameField().setText("192.168.1.64");
+        model.setUserName("j");
+        view.getUserNameField().setText("j");
+        model.setPort(1370);
+        view.getPortField().setText("1370");
+        model.setHostName("pc");
+        view.getHostNameField().setText("pc");
+
 
         // all info looks good, try to connect
         if (!invalidInput) {
