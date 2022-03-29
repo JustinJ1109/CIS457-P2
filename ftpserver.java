@@ -70,12 +70,21 @@ public class ftpserver extends Thread{
 
         UserData user = new UserData(userInfo, hostName, speed);
 
+<<<<<<< Updated upstream
         System.out.println("TID: " + this.getId() +" data receieved: " + hostName + " " + port + " " + userName + " " + speed);
         addUser(user);
         
         File file = getFile();
         ArrayList<FileData> files = parseData(file, user);
         addContent(files);
+=======
+        userList.add(user);
+
+        /*****
+         * 
+         * 
+         */
+>>>>>>> Stashed changes
 
         System.out.println("Closing inFromClient stream and socket on port " + connectionSocket.getPort());
         inFromClient.close();
