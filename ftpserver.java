@@ -225,17 +225,31 @@ public class ftpserver extends Thread{
             String hostName = tokens.nextToken();
             String fileName = tokens.nextToken();
 
+	    Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+	    dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+
+	    File openFile = new File(fileName);
+
             for (FileData f: fileList) {
                 if (f.getFileName().equals(fileName) && f.getUser().getHostName().equals(hostName) && f.getUser().getSpeed().equals(speed)) {
-                    //TODO: get file from master file list and send it to client
-                    
-                }
+                    //TODO: get file from master file list and send it to client //
+		    if (openFile.exists()) {
+                    	byte[] buffer = new byte[8192];
+		    	BufferedInputStream in = new BufferedInputStream(new FileInputStream(fileName));
+		    	int count;
+		    	while((count = in.read(buffer)) > 0) {
+		    		dataOutToClient.write(buffer, 0, count);
+		    	}
+               		in.close();
+		    }
+		}
             }
 
-            Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-            dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+            //Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+            //dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
             
             try {
+		System.out.println("File sent?");        
                 dataOutToClient.close();
                 dataSocket.close();
             }
