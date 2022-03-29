@@ -1,12 +1,17 @@
 import java.io.*; 
 import java.net.*;
 import java.util.*;
+import org.w3c.dom.*;
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
 
 /***********************************************
  * this a TCP Client side that can list and get files from the server directory, it can not stor
  * files to the serer directory
  *
- * @authors Cole Blunt, Noah Meyers, Prakash Lingden, Brennan Luttrell, Justin Jahlas
+ * @authors Cole Blunt, Noah Myers, Prakash Lingden, Brennan Luttrell, Justin Jahlas
  * @version 3.15.2022
  */
 class FTPClient {
@@ -233,6 +238,26 @@ class FTPClient {
 			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
 			
 			//TODO: read in file from server and download (or put in xml?)
+			File xmlFile = new File("C:\\filelist.xml");
+			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+			Document document = documentBuilder.parse(xmlFile);
+			Element documentElement = document.getDocumentElement();
+			Element textNode = document.createElement("name");
+			textNode.setTextContent("Rose");
+			Element textNode1 = document.createElement("description");
+			textNode1.setTextContent("Delhi");
+			Element nodeElement = document.createElement("file");
+			nodeElement.appendChild(textNode);
+			nodeElement.appendChild(textNode1);
+			documentElement.appendChild(nodeElement);
+			document.replaceChild(documentElement, documentElement);
+			Transformer tFormer = TransformerFactory.newInstance().newTransformer();
+			tFormer.setOutputProperty(OutputKeys.METHOD, "xml");
+			Source source = new DOMSource(document);
+			Result result = new StreamResult(xmlFile);
+			tFormer.transform(source, result);
+
 
 			inData.close();
 			dataSocket.close();
