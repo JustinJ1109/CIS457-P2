@@ -1,6 +1,12 @@
 import java.net.*;
 import java.io.*;
 
+/***
+* P2P Server Manager
+* dispatches threads as needed to connect multiple users
+* @authors Cole Blunt, Noah Myers, Prakash Lingden, Brennan Luttrell, Justin Jahlas
+
+***/
 public class ftpmulti {
 
     public static void main(String[] args) throws IOException {

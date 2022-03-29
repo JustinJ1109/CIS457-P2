@@ -4,6 +4,12 @@ import java.util.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
 
+/***
+* P2P Server 
+* @authors Cole Blunt, Noah Myers, Prakash Lingden, Brennan Luttrell, Justin Jahlas
+
+***/
+
 public class ftpserver extends Thread{ 
     
     private Socket connectionSocket;

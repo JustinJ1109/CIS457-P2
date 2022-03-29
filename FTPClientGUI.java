@@ -4,11 +4,15 @@ import java.sql.PreparedStatement;
 import javax.swing.*;
 import javax.swing.table.TableModel;
 
-/* The GUI/View class of the FTPClient
+/** The GUI/View class of the FTPClient
 
 Responsible for drawing to the screen and capturing user input for the
 controller to use
-*/
+
+* @authors Cole Blunt, Noah Myers, Prakash Lingden, Brennan Luttrell, Justin Jahlas
+
+***/
+
 public class FTPClientGUI {
     
     final private String[] colNames = {"Speed", "Hostname", "Filename"};

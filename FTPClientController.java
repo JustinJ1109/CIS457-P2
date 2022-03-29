@@ -1,3 +1,11 @@
+
+/***
+* P2P Client Controller
+* controls logic flow between GUI and client backend
+* @authors Cole Blunt, Noah Myers, Prakash Lingden, Brennan Luttrell, Justin Jahlas
+
+***/
+
 public class FTPClientController {
     private FTPClient model;
     private FTPClientGUI view;
