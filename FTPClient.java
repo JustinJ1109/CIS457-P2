@@ -18,7 +18,6 @@ class FTPClient {
 
 	private ArrayList<String> tableData;
 
-	private static boolean isConnected = false;
 
 	private DataOutputStream toServer;
 
@@ -31,7 +30,6 @@ class FTPClient {
 			System.out.println("Attemping to connect to host: " + serverHostName + " at port " + controlPort);
 			ControlSocket = new Socket(serverHostName, controlPort);
 			System.out.println("You are connected to " + serverHostName);
-			isConnected = true;
 
 			toServer = new DataOutputStream(ControlSocket.getOutputStream());
 			toServer.writeUTF(hostName + " " + port + " " + userName + " " + speed);
@@ -68,12 +66,11 @@ class FTPClient {
 			System.out.println("Data port " + port);
 			ServerSocket welcomeData = new ServerSocket(port);
 
-			toServer.writeUTF(port + " " + sentence);
+			toServer.writeUTF(port + " " + sentence + " " + hostName);
 
 			Socket dataSocket = welcomeData.accept();
 			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
 			try {
-				
 				String file = inData.readUTF();
 				System.out.println("Closing server. Code: " + file);
 				
@@ -82,7 +79,6 @@ class FTPClient {
 				System.out.println("Could not close server");
 				e.printStackTrace();
 			}
-
 			inData.close();
 			toServer.close();
 			dataSocket.close();
@@ -275,10 +271,6 @@ class FTPClient {
 
 	public int getPort() {
 		return port;
-	}
-
-	public boolean getIsConnected() {
-		return isConnected;
 	}
 
 	public ArrayList<String> getTableData() {

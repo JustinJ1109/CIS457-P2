@@ -119,7 +119,7 @@ public class FTPClientController {
 
     /* Give view the new table received from model */
     private void searchFor() {
-        if (!model.getIsConnected()) {
+        if (!connectedToServer) {
             view.appendTextBoxln("[!] Must be connected to a server [!]");
             return;
         }
@@ -155,7 +155,7 @@ public class FTPClientController {
     /* Called when player presses Go button */
     private void doCommand() {
         System.out.println("Doing command");
-        if (!model.getIsConnected()) {
+        if (!connectedToServer) {
             view.appendTextBoxln("[!] Must be connected to a server [!]");
             return;
         }

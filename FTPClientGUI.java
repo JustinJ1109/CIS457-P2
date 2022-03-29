@@ -1,6 +1,5 @@
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 
 /* The GUI/View class of the FTPClient
 

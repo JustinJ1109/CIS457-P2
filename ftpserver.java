@@ -15,6 +15,8 @@ public class ftpserver extends Thread{
     protected static Vector<FileData> fileList = new Vector<FileData>();
     protected static Vector<UserData> userList = new Vector <UserData>();
 
+    ArrayList<FileData> files;
+
     private static DataOutputStream outToClient;
     private DataInputStream inFromClient;
 
@@ -72,7 +74,7 @@ public class ftpserver extends Thread{
         inFromClient = new DataInputStream(new BufferedInputStream(this.connectionSocket.getInputStream()));
 
         File file = getFile();
-        ArrayList<FileData> files = parseData(file, user);
+        files = parseData(file, user);
         addContent(files);
 
         System.out.println("Done connecting");
@@ -163,7 +165,6 @@ public class ftpserver extends Thread{
                 } else {
                     for (int i=0; i<children.length; i++)
                     {
-
                         String filename = children[i];
                         System.out.print(filename);
 
@@ -224,7 +225,12 @@ public class ftpserver extends Thread{
             String hostName = tokens.nextToken();
             String fileName = tokens.nextToken();
 
-            //TODO: get file from master file list and send it to client
+            for (FileData f: fileList) {
+                if (f.getFileName().equals(fileName) && f.getUser().getHostName().equals(hostName) && f.getUser().getSpeed().equals(speed)) {
+                    //TODO: get file from master file list and send it to client
+                    
+                }
+            }
 
             Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
             dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
@@ -254,6 +260,7 @@ public class ftpserver extends Thread{
                 dataOutToClient.close();
                 dataSocket.close();
             }
+
             catch (Exception e) {
                 System.out.println("Broke...");
                 e.printStackTrace();
@@ -263,8 +270,14 @@ public class ftpserver extends Thread{
         }
 
         if(clientCommand.equals("close:")) {
+            String hostName = tokens.nextToken();
             Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
             dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+            
+            for (FileData f: files) {
+                System.out.println("Removing " + f.getFileName());
+                fileList.remove(f);
+            }
             
             try {
                 dataOutToClient.writeUTF("SUCCESS");
