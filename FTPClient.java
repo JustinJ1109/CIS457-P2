@@ -90,7 +90,8 @@ class FTPClient {
 			outToServer.writeBytes(port + " " + sentence + " " + keyword + '\n');
 			System.out.print("client: " + keyword);
 			Socket dataSocket = welcomeData.accept();
-			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+			//DataOutputStream outToServer = new DataOutputStream(ControlSocket.getOutputStream());
+			//DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
 		}
 		catch (Exception e) {
 

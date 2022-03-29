@@ -64,7 +64,7 @@ public class ftpserver extends Thread{
         String userName = tokenizer.nextToken();
         String speed = tokenizer.nextToken();
 
-        UserData user = new UserData(userInfo, hostName, speed);
+        UserData user = new UserData(userName, hostName, speed);
 
 
         System.out.println("TID: " + this.getId() +" data receieved: " + hostName + " " + port + " " + userName + " " + speed);
@@ -138,24 +138,24 @@ public class ftpserver extends Thread{
 
     }
 
-    private static void searchCommand(String keyword) throws Exception {
-        synchronized (fileList) {
-            synchronized (userList) {
-                String output = "";
-                for (int i = 0; i < ftpserver.fileList.size(); i++) {
-                    FileData fileEntry = (FileData) ftpserver.fileList.get(i);
-                    String description = fileEntry.getDescription();
-                    if (description.contains(keyword)) {
-                        UserData user = fileEntry.getUser();
-                        output += user.getSpeed() + " " + user.getHostName() + " " + fileEntry.getFileName() + " \t";
-                    }
-                }
-                System.out.println("Sending back: " + output);
-               //outToClient.writeBytes(output + " \n");
-
-            }
-        }
-    }
+//    private static void searchCommand(String keyword) throws Exception {
+//        synchronized (fileList) {
+//            synchronized (userList) {
+//                String output = "";
+//                for (int i = 0; i < ftpserver.fileList.size(); i++) {
+//                    FileData fileEntry = (FileData) ftpserver.fileList.get(i);
+//                    String description = fileEntry.getDescription();
+//                    if (description.contains(keyword)) {
+//                        UserData user = fileEntry.getUser();
+//                        output += user.getSpeed() + " " + user.getHostName() + " " + fileEntry.getFileName() + " \t";
+//                    }
+//                }
+//                System.out.println("Sending back: " + output);
+//               //outToClient.writeBytes(output + " \n");
+//
+//            }
+//        }
+    //}
 	
 	private void processRequest(String clientCommand) throws Exception {
             String fromClient;
@@ -280,10 +280,7 @@ public class ftpserver extends Thread{
             }
 
             if(clientCommand.equals("search:")) {
-                System.out.println("at server");
-                String keyword = tokens.nextToken();
-                System.out.println("server: " + keyword);
-                ftpserver.searchCommand(keyword);
+
             }
             
         }
