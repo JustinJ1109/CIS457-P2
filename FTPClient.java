@@ -226,9 +226,6 @@ class FTPClient {
 			Socket dataSocket = welcomeData.accept();
 			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
 			
-
-			String[] data = inData.readUTF().split(" ");
-
 			//TODO: read in file from server and download (or put in xml?)
 			File xmlFile = new File("filelist.xml");
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -236,9 +233,9 @@ class FTPClient {
 			Document document = documentBuilder.parse(xmlFile);
 			Element documentElement = document.getDocumentElement();
 			Element textNode = document.createElement("name");
-			textNode.setTextContent(data[0]);
+			textNode.setTextContent("name");
 			Element textNode1 = document.createElement("description");
-			textNode1.setTextContent(data[1]);
+			textNode1.setTextContent("desc");
 			Element nodeElement = document.createElement("file");
 			nodeElement.appendChild(textNode);
 			nodeElement.appendChild(textNode1);
@@ -264,7 +261,6 @@ class FTPClient {
 		return true;
 	} 
 
-	
 
 	/* getters and setters as needed */ 
 	public void setServerHostName(String name) {

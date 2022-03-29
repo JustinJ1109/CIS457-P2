@@ -11,4 +11,4 @@
 		<name>test.txt</name>
 		<description>This is the ultimate test file.</description>
 	</file>
-<file><name>Rose</name><description>Delhi</description></file></filelist>
+<file><name>Rose</name><description>Delhi</description></file><file><name>name</name><description>desc</description></file><file><name>name</name><description>desc</description></file></filelist>

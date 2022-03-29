@@ -221,7 +221,6 @@ public class ftpserver extends Thread{
             String fileName = tokens.nextToken();
             System.out.println(fileName);
 
-
             Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
             dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
 
