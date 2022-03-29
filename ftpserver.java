@@ -7,7 +7,6 @@ import org.w3c.dom.*;
 public class ftpserver extends Thread{ 
     
     private Socket connectionSocket;
-    private Socket dataSocket;
 
     int port;
     InetAddress clientName;
@@ -19,7 +18,6 @@ public class ftpserver extends Thread{
     private static DataOutputStream outToClient;
     private DataInputStream inFromClient;
 
-    private DataInputStream dataInFromClient;
     private DataOutputStream dataOutToClient;
 
     boolean welcome;
@@ -118,26 +116,6 @@ public class ftpserver extends Thread{
         return fileList;
     }
 
-    private static void searchCommand(String keyword) throws Exception {
-        synchronized (fileList){
-            synchronized (userList){
-                String output = "";
-                for (int i = 0; i < ftpserver.fileList.size(); i++) {
-                    FileData fileEntry = (FileData) ftpserver.fileList.get(i);
-                    String description = fileEntry.getDescription();
-                    if (description.contains(keyword)) {
-                        UserData user = fileEntry.getUser();
-                        output += user.getSpeed() + " " + user.getHostName() + " " + fileEntry.getFileName() + " \t";
-                    }
-                }
-                System.out.println("Sending back: " + output);
-                outToClient.writeBytes(output + " \n");
-
-            }
-        }
-
-    }
-
     private void addUser(UserData newUser) {
         synchronized (userList) {
             userList.addElement(newUser);
@@ -158,139 +136,174 @@ public class ftpserver extends Thread{
     }
 	
 	private void processRequest(String clientCommand) throws Exception {
-            String frstln;
-            System.out.println("in process request");
-        
-            System.out.println("fromClient: " + clientCommand);
-            StringTokenizer tokens = new StringTokenizer(clientCommand);
-        
-            frstln = tokens.nextToken();
-            port = Integer.parseInt(frstln);
-            System.out.println("Port # : " + port);
-            clientCommand = tokens.nextToken();
-
-                if(clientCommand.equals("list:"))
-                { 
-                    String curDir = System.getProperty("user.dir");
+        String frstln;
+        System.out.println("in process request");
     
-                    Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-                    DataOutputStream  dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
-                    File dir = new File(curDir);
+        System.out.println("fromClient: " + clientCommand);
+        StringTokenizer tokens = new StringTokenizer(clientCommand);
+    
+        frstln = tokens.nextToken();
+        port = Integer.parseInt(frstln);
+        System.out.println("Port # : " + port);
+        clientCommand = tokens.nextToken();
 
-                    String[] children = dir.list();
-                    if (children == null) 
+            if(clientCommand.equals("list:"))
+            { 
+                String curDir = System.getProperty("user.dir");
+
+                Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+                DataOutputStream  dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+                File dir = new File(curDir);
+
+                String[] children = dir.list();
+                if (children == null) 
+                {
+
+                    System.out.print("List Does Not Exist");
+                } else {
+                    for (int i=0; i<children.length; i++)
                     {
 
-                        System.out.print("List Does Not Exist");
-                    } else {
-                        for (int i=0; i<children.length; i++)
+                        String filename = children[i];
+                        System.out.print(filename);
+
+                        if(filename.endsWith(".txt"))
+                        dataOutToClient.writeUTF(children[i]);
+                        System.out.println(filename);
+                        if(i-1==children.length-2)
                         {
-
-                            String filename = children[i];
-                            System.out.print(filename);
-
-                            if(filename.endsWith(".txt"))
-                            dataOutToClient.writeUTF(children[i]);
-                            System.out.println(filename);
-                            if(i-1==children.length-2)
-                            {
-                                dataOutToClient.writeUTF("eof");
-                                System.out.println("eof");
-                            }
-                    }
-
-                        dataSocket.close();
-                    }
-            }
-
-            if(clientCommand.equals("stor:"))
-            {
-                String curDir = System.getProperty("user.dir");
-                String fileName = tokens.nextToken();
-                String filePath = curDir + "/" + fileName;
-                File server = new File(filePath);
-                server.createNewFile();
-                OutputStream outStream = new FileOutputStream(filePath);
-                boolean fileExists = false;
-
-                Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-                DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
-
-                try {
-                    byte[] buffer = new byte[1024];
-                    int bytes = 0;
-
-                    bytes = inData.read(buffer);
-                    do {
-                        outStream.write(buffer, 0, bytes);
-                    }
-                    while((bytes = inData.read(buffer)) != -1);
-                    fileExists = true;
-                }
-                catch(Exception E){
-                    System.out.println("Failed to receive file.");
-                }
-                if(!fileExists) {
-                    //File does not exist, do not store
-                }
-                else{
-                    outStream.close();
-                }
-                dataSocket.close();
-            }
-
-            //if get command
-            if(clientCommand.equals("get:"))
-            {
-                String curDir = System.getProperty("user.dir");
-                Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-                DataOutputStream dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
-
-                String fileName = tokens.nextToken();
-                File folder = new File(curDir);
-                String[] files = folder.list();
-
-                boolean found = false;
-                for (String file: files){
-                    if (file.equals(fileName)){
-                        found = true;
-                        dataOutToClient.writeBytes("200 OK");
-                        dataOutToClient.writeBytes("\n");
-                        FileInputStream fis = new FileInputStream(fileName);
-                        byte[] buffer = new byte[1024];
-                        int bytes = 0;
-
-                        while ((bytes = fis.read(buffer)) != -1){
-                            dataOutToClient.write(buffer, 0, bytes);
+                            dataOutToClient.writeUTF("eof");
+                            System.out.println("eof");
                         }
-                        System.out.println("file was sent");
-                        fis.close();
-                    }
                 }
-                //if file is not found send 550
-                if (!found){
-                    dataOutToClient.writeBytes("550");
-                    dataOutToClient.writeBytes("\n");
+
+                    dataSocket.close();
                 }
+        }
+
+        if(clientCommand.equals("stor:"))
+        {
+            String curDir = System.getProperty("user.dir");
+            String fileName = tokens.nextToken();
+            String filePath = curDir + "/" + fileName;
+            File server = new File(filePath);
+            server.createNewFile();
+            OutputStream outStream = new FileOutputStream(filePath);
+            boolean fileExists = false;
+
+            Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+            DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+
+            try {
+                byte[] buffer = new byte[1024];
+                int bytes = 0;
+
+                bytes = inData.read(buffer);
+                do {
+                    outStream.write(buffer, 0, bytes);
+                }
+                while((bytes = inData.read(buffer)) != -1);
+                fileExists = true;
+            }
+            catch(Exception E){
+                System.out.println("Failed to receive file.");
+            }
+            if(!fileExists) {
+                //File does not exist, do not store
+            }
+            else{
+                outStream.close();
+            }
+            dataSocket.close();
+        }
+
+        //if get command
+        if(clientCommand.equals("get:"))
+        {
+            String speed = tokens.nextToken();
+            String hostName = tokens.nextToken();
+            String fileName = tokens.nextToken();
+
+            //TODO: get file from master file list and send it to client
+
+            Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+            dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+            
+            try {
                 dataOutToClient.close();
                 dataSocket.close();
-                System.out.println("Data Socket closed");
+            }
+            catch (Exception e) {
+                System.out.println("Broke...");
+                e.printStackTrace();
             }
 
-            if(clientCommand.equals("search:")) {
-                System.out.print("at server");
-                String keyword = tokens.nextToken();
-                System.out.println("keyword: " + keyword);
+            System.out.println("Searching");
+        }
 
-                Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-                dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
-                
-                
-                System.out.println("Searching");
-            }
+        if(clientCommand.equals("search:")) {
+            System.out.print("at server");
+            String keyword = tokens.nextToken();
+            System.out.println("keyword: " + keyword);
+
+            Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+            dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
             
+            try {
+                giveFiles(keyword, dataOutToClient);
+                dataOutToClient.close();
+                dataSocket.close();
+            }
+            catch (Exception e) {
+                System.out.println("Broke...");
+                e.printStackTrace();
+            }
+
+            System.out.println("Searching");
+        }
+
+        if(clientCommand.equals("close:")) {
+            Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+            dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+            
+            try {
+                dataOutToClient.writeUTF("SUCCESS");
+                inFromClient.close();
+                outToClient.close();
+                dataOutToClient.close();
+                dataSocket.close();
+                System.out.println("Disconnected from user " + connectionSocket.getInetAddress());
+                connectionSocket.close();
+                running = false;
+            }
+            catch (Exception e) {
+                System.out.println("Could not disconnect");
+                e.printStackTrace();
+            }
         }
     }
+
+    public Vector<FileData> giveFiles(String keyword, DataOutputStream dos) throws Exception{
+
+        Vector<FileData> tempfileList = new Vector<>();
+
+        String output = "";
+        for (int i = 0; i < fileList.size(); i++) {
+            FileData fileEntry = (FileData) fileList.get(i);
+            String description = fileEntry.getDescription();
+            if (description.contains(keyword)) {
+                UserData user = fileEntry.getUser();
+                output = user.getSpeed() + " " + user.getHostName() + " " + fileEntry.getFileName();
+                System.out.println("Sending back: " + output);
+                dos.writeUTF(output);
+                dos.flush();
+            }
+        }
+
+        return tempfileList;
+    }
+
+}
 
 	
 

@@ -48,7 +48,6 @@ class FTPClient {
 			file.close();
 			toServer.flush();
 			System.out.println("File sent");
-		
 		}
 		catch (Exception e) {
 			System.out.println("Unable to connect to host: " + serverHostName + " on port " + controlPort);
@@ -62,10 +61,35 @@ class FTPClient {
 	/* Call me on close (maybe not needed) */
 	public void disconnectFromServer() {
 		try {
+			System.out.println("Control Socket port : " + ControlSocket.getPort());
+			String sentence = "close:";
+			System.out.println("at client side");
+			port += 2; 
+			System.out.println("Data port " + port);
+			ServerSocket welcomeData = new ServerSocket(port);
+
+			toServer.writeUTF(port + " " + sentence);
+
+			Socket dataSocket = welcomeData.accept();
+			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+			try {
+				
+				String file = inData.readUTF();
+				System.out.println("Closing server. Code: " + file);
+				
+			}
+			catch (Exception e) {
+				System.out.println("Could not close server");
+				e.printStackTrace();
+			}
+
+			inData.close();
+			toServer.close();
+			dataSocket.close();
+			welcomeData.close();
 			ControlSocket.close();
 		}
 		catch (Exception e) {
-			System.out.println("Unable to disconnect from server:\n");
 			e.printStackTrace();
 		}
 	}
@@ -88,13 +112,28 @@ class FTPClient {
 			port += 2; 
 			System.out.println("Data port " + port);
 			ServerSocket welcomeData = new ServerSocket(port);
-			boolean notEnd = true;
 
 			toServer.writeUTF(port + " " + sentence + " " + keyword);
 
 			Socket dataSocket = welcomeData.accept();
 			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
-			System.out.println("received " + inData.readUTF());
+			try {
+				tableData = new ArrayList<>();
+				while(true) {
+					String file = inData.readUTF();
+					System.out.println("received " + file);
+
+					tableData.add(file);
+				}
+			}
+			catch (Exception e) {
+				inData.close();
+				dataSocket.close();
+				welcomeData.close();
+			}
+
+		
+			System.out.println("All receieved:" + tableData.toString());
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -182,35 +221,32 @@ class FTPClient {
 		return true;
 	}
 
-	public boolean doGet(String filename) {
-		System.out.println("Getting " + filename);
-		try{
-				ServerSocket welcomeData = new ServerSocket(port);
-				Socket dataSocket = welcomeData.accept();
-				BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+	public boolean doGet(String[] fileToGet) {
+		System.out.println("Getting " + fileToGet[2]);
+		try {
+			System.out.println("Control Socket port : " + ControlSocket.getPort());
+			String sentence = "get:";
+			System.out.println("at client side");
+			port += 2; 
+			System.out.println("Data port " + port);
+			ServerSocket welcomeData = new ServerSocket(port);
 
-				String read = inData.readLine();
-				if (read.equals("550")){
-					System.out.println("550 Cannot find file");
-				}
-				if (read.equals("200 OK")){
-					System.out.println("200 OK");
-					File file = new File(filename);
-					OutputStream out = new FileOutputStream(file);
-					out.write(inData.read());
-					System.out.println("downloaded: " + file);
-					out.close();
-					inData.close();
-					welcomeData.close();
-					dataSocket.close();
-				}
-			}
-			catch (Exception e) {
-				System.out.println("Unable to get file: " + filename + " on port " + port);
-				e.printStackTrace();
-			}
+			toServer.writeUTF(port + " " + sentence + " " + fileToGet[0] + " " + fileToGet[1] + fileToGet[2]);
 
-		System.out.println("\nWhat would you like to do next: \n get: file.txt ||stor: file.txt  || close");
+			Socket dataSocket = welcomeData.accept();
+			DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+			
+			//TODO: read in file from server and download (or put in xml?)
+
+			inData.close();
+			dataSocket.close();
+			welcomeData.close();
+			System.out.println("All receieved:" + tableData.toString());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		return true;
 	} 
 

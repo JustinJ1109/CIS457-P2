@@ -2,6 +2,8 @@ public class FTPClientController {
     private FTPClient model;
     private FTPClientGUI view;
 
+    private boolean connectedToServer = false;
+
     public FTPClientController(FTPClient m, FTPClientGUI v) {
         model = m;
         view = v;
@@ -18,6 +20,11 @@ public class FTPClientController {
 
     /* Connect to the server when user presses button */
     private void connectToServer() {
+
+        if (connectedToServer) {
+            disconnectFromServer();
+            return;
+        }
         System.out.println("Running connectToServer");
         System.out.println("Server Host Name: " + view.getServerHostNameField().getText());
         System.out.println("Port: " + view.getPortField().getText());
@@ -76,6 +83,7 @@ public class FTPClientController {
 
         model.setSpeed(view.getSpeedBox().getSelectedItem().toString());
 
+        // FIXME: remove, this is only for justin
         model.setServerHostName("192.168.1.64");
         view.getServerHostNameField().setText("192.168.1.64");
         model.setUserName("j");
@@ -90,8 +98,23 @@ public class FTPClientController {
         if (!invalidInput) {
             if (model.doConnection()) {
                 view.appendTextBoxln("Connected to " + model.getServerHostName() + " on port " + model.getPort());
+                connectedToServer = true;
+                view.getConnectButton().setText("Disconnect");
+            
             }
         }
+    }
+
+    private void disconnectFromServer() {
+        view.getServerHostNameField().setText("");
+        view.getPortField().setText("");
+        view.getUserNameField().setText("");
+        view.getHostNameField().setText("");
+        model.disconnectFromServer();
+        connectedToServer = false;
+        view.getConnectButton().setText("Connect");
+
+        view.appendTextBoxln("Disconnected from server");
     }
 
     /* Give view the new table received from model */
@@ -101,14 +124,32 @@ public class FTPClientController {
             return;
         }
         System.out.println("Running searchFor");
-        model.searchFor(view.getKeywordField().getText());
         if (view.getKeywordField().getText().equals("")) {
-            view.appendTextBoxln("Showing all results...");
+            view.appendTextBoxln("Must input a keyword");
+            return;
         }
 
         else {
+            model.searchFor(view.getKeywordField().getText());
             view.appendTextBoxln("Showing all that match '" + view.getKeywordField().getText() + "'");
         }
+
+        String[] eles = model.getTableData().toArray(new String[model.getTableData().size()]);
+        int i = 0;
+        String[][] data = new String[eles.length][3];
+        for (String s: eles) {
+            data[i] = s.split(" ");
+            i++;
+        }
+        view.setData(data);
+        
+        view.resetSearchTable(data);
+        //FIXME: does not update GUI for some reason
+        // look up how to update JTable data
+        // Or maybe how to update JTable within a JScrollPane
+        // CHECK OUT LINES 127-131 IN GUI
+
+        System.out.println("row count " + view.getSearchTable().getRowCount());
     }
 
     /* Called when player presses Go button */
@@ -144,16 +185,17 @@ public class FTPClientController {
         }
 
         else if (command.equals("get")) {
-            if (filename == null) {
+            String[] fileToGet = view.getData()[view.getSearchTable().getSelectedRow()];
+            if (fileToGet == null) {
                 view.appendTextBoxln("Must select a file");
                 return;
             }
 
-            if (model.doGet(filename)) {
-                view.appendTextBoxln("Getting " + filename);
+            if (model.doGet(fileToGet)) {
+                view.appendTextBoxln("Getting " + fileToGet[2]);
             }
             else {
-                view.appendTextBoxln("Unable to get " + filename);
+                view.appendTextBoxln("Unable to get " + fileToGet[2]);
             }
 
             view.getCommandField().setText("");

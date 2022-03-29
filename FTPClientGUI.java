@@ -1,5 +1,6 @@
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 /* The GUI/View class of the FTPClient
 
@@ -10,7 +11,7 @@ public class FTPClientGUI {
     
     final private String[] colNames = {"Speed", "Hostname", "Filename"};
 
-    private String[][] data = { { "SPEED_1", "HOST1", "FILENAME1" }, { "SPEED_2", "HOST2", "FILENAME2" } };
+    private String[][] data = {{" ", " ", " "}};
 
     private JButton connectButton;
     private JButton searchButton;
@@ -34,6 +35,8 @@ public class FTPClientGUI {
 
     // FTP SECTION
     private JTextField commandField;
+
+    private JScrollPane tableScrollPane;
 
     public FTPClientGUI(String title) {
         /* GUI frame holds everything*/
@@ -110,7 +113,7 @@ public class FTPClientGUI {
         
         // make output panel scrollable
         JScrollPane ftpScrollPane = new JScrollPane(ftpTextArea);
-        ftpScrollPane.setPreferredSize(new Dimension(500, 100));
+        // ftpScrollPane.setPreferredSize(new Dimension(500, 100));
 
     /* Drop-Down menu */
         // HOST SECTION
@@ -125,7 +128,7 @@ public class FTPClientGUI {
         searchTable.setPreferredScrollableViewportSize(searchTable.getPreferredSize());
         
         /* scroll pane holds table, without it, doesn't show headers*/
-        JScrollPane tableScrollPane = new JScrollPane(searchTable);
+        tableScrollPane = new JScrollPane(searchTable);
 
     /* Buttons */
         connectButton = new JButton("Connect");
@@ -262,6 +265,10 @@ public class FTPClientGUI {
         this.data = data;
     }
 
+    public void addData(String[] data, int index) {
+        this.data[index] = data;
+    }
+
     public JButton getConnectButton() {
         return this.connectButton;
     }
@@ -317,4 +324,12 @@ public class FTPClientGUI {
     public JComboBox<String> getSpeedBox() {
         return speedBox;
     }
+
+    public JScrollPane getTableScrollPane() {
+        return tableScrollPane;
+    }
+
+    public void resetSearchTable(String[][] data) {
+    }
+
 }
